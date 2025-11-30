@@ -56,12 +56,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Locale;
 
@@ -249,7 +248,7 @@ public class WidgetService extends Service {
 
         instance = this;
 
-        // Регистрируем ресивер для обновления темы
+        // Receiver for theme changes
         registerReceiver(themeChangedReceiver, new IntentFilter("ACTION_THEME_CHANGED"));
 
         windowManager = getSystemService(WindowManager.class);
@@ -263,7 +262,7 @@ public class WidgetService extends Service {
     private void createOverlayView() {
         // Create the overlay view
         Log.d(TAG, "Creating overlay view");
-        themedContext = new ContextThemeWrapper(this, getThemeResId());
+        themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this.getApplicationContext()));
 
         LayoutInflater layoutInflater = LayoutInflater.from(themedContext);
 
@@ -306,8 +305,8 @@ public class WidgetService extends Service {
         Log.d(TAG, "Updating overlay view");
 
         windowManager.removeView(binding.getRoot());
-        createOverlayView(); // Пересоздаём с новым контекстом и цветами
-//        applyPreferences(); // Обновляем логику //TODO: Проверить, что это нужно
+        createOverlayView(); // Recreate the view with new themed context
+//        applyPreferences(); // Set preferences again //TODO: Check if this really needed, since it is already in createOverlayView()
     }
 
     @Override
@@ -338,7 +337,7 @@ public class WidgetService extends Service {
 
         float timeOutlineWidth = Math.max(2F, prefs.timeFontSize.get() / 32F);
         float dateOutlineWidth = Math.max(2F, prefs.dateFontSize.get() / 32F);
-        int outlineColor = getColorFromAttr(themedContext, R.attr.text_outline);
+        int outlineColor = Helpers.getColorFromAttr(themedContext, R.attr.text_outline);
         binding.timeText.setOutlineColor(outlineColor);
         binding.timeText.setOutlineWidth(timeOutlineWidth);
         binding.dateText.setOutlineColor(outlineColor);
@@ -406,6 +405,67 @@ public class WidgetService extends Service {
             locationManager.removeUpdates(locationListener);
             locationManager.unregisterGnssStatusCallback(gnssStatusCallback);
             locationManager = null;
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void isItDayOrNightBasedOnSunriseSunsetAtCurrentLocation() {
+        // You will need permissions checks before running this code in a real app
+        if (locationManager == null) {
+            locationManager = getSystemService(LocationManager.class);
+        }
+        Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+        if (lastKnownLocation == null) {
+            // Try network provider or a different method (e.g., FusedLocationProviderClient)
+            lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        }
+
+        if (lastKnownLocation != null) {
+            double latitude = lastKnownLocation.getLatitude();
+            double longitude = lastKnownLocation.getLongitude();
+            // Proceed to calculate sunrise/sunset
+            updateOverlay(latitude, longitude);
+        } else {
+            // Handle the case where location is unavailable
+        }
+    }
+    private void updateOverlay(double latitude, double longitude) {
+        // ... remove existing views ...
+
+        boolean isDay = isDaytime(latitude, longitude, this); // Call your calculation method
+
+        int themeResId;
+        if (isDay) {
+            themeResId = R.style.AppTheme_Day; // Your Day theme style
+        } else {
+            themeResId = R.style.AppTheme_Night; // Your Night theme style
+        }
+        //TODO Слить с текущей логикой
+        updateOverlay();
+    }
+
+    public boolean isDaytime(double latitude, double longitude, Context context) {
+        if (Double.isNaN(latitude) || Double.isNaN(longitude)) {
+            return true; // Default to day if location is invalid
+        }
+
+        try {
+            // Use an existing library or a ported algorithm implementation here.
+            // The Android framework actually has a private TwilightCalculator class internally,
+            // which you cannot directly access. You must use a public implementation.
+
+            // Placeholder for calculation logic
+            LocalDateTime sunrise = Helpers.getSunriseTime(latitude, longitude); // Your implementation needed
+            LocalDateTime sunset = Helpers.getSunsetTime(latitude, longitude);   // Your implementation needed
+            LocalDateTime now = LocalDateTime.now();
+
+            // Check if current time is after sunrise and before sunset
+            return now.isAfter(sunrise) && now.isBefore(sunset);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error calculating day/night", e);
+            return true; // Default to day on error
         }
     }
 
@@ -545,34 +605,6 @@ public class WidgetService extends Service {
         }
     }
 
-    /**
-     * Получает цвет из атрибута темы
-     */
-    private int getColorFromAttr(Context context, int attr) {
-        TypedValue typedValue = new TypedValue();
-        if (context.getTheme().resolveAttribute(attr, typedValue, true)) {
-            if (typedValue.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
-                    typedValue.type <= TypedValue.TYPE_LAST_COLOR_INT) {
-                return typedValue.data; // Цвет
-            } else {
-                // Это не цвет, а, например, ссылка — разрешаем как ресурс
-                return ContextCompat.getColor(context, typedValue.resourceId);
-            }
-        }
-        throw new IllegalArgumentException("Не удалось разрешить атрибут: " + attr);
-    }
-
-    private int getThemeResId() {
-        int nightMode = prefs.savedNightMode.get();
-        boolean isSystemInNightMode =
-                (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
-        if (nightMode == AppCompatDelegate.MODE_NIGHT_YES ||
-                (nightMode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM && isSystemInNightMode)) {
-            return R.style.AppTheme_Night; // Night theme style
-        } else {
-            return R.style.AppTheme_Day; // Day theme style
-        }
-    }
 
     @Override
     public void onDestroy() {

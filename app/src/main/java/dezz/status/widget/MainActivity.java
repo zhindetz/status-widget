@@ -50,16 +50,15 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding;
 
-    // Создаём themed контекст
     Context themedContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         prefs = new Preferences(this);
         super.onCreate(savedInstanceState);
-        // Вместо AppCompatDelegate.setDefaultNightMode() используем определенную тему.
-        // Оборачиваем контекст в тему, чтобы ?attr работали.
-        themedContext = new ContextThemeWrapper(this, getThemeResId());
+        // Instead of AppCompatDelegate.setDefaultNightMode() select theme manually.
+        // Context should be wrapped with ContextThemeWrapper for ?attr to work.
+        themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this.getApplicationContext()));
         LayoutInflater layoutInflater = LayoutInflater.from(themedContext);
         binding = ActivityMainBinding.inflate(layoutInflater);
         setContentView(binding.getRoot());
@@ -120,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /* Выбор темы */
+        // Theme dropdown
         ArrayAdapter<String> themeSpinnerAdapter = new ArrayAdapter<>(
                 themedContext,
                 R.layout.spinner_dropdown_item,
@@ -244,8 +243,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    /* Вызывается при смене опции ночного режима в спинере */
+    // Is called when user changes theme in the dropdown
     private void saveNightModeAndRestart(int themeSpinnerOption) {
         Log.d(TAG, "Saving NightMode spinner option: " + themeSpinnerOption + " and restarting activity");
         prefs.nightModeSpinnerOption.set(themeSpinnerOption);
@@ -262,25 +260,13 @@ public class MainActivity extends AppCompatActivity {
                 prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
         }
-        // Уведомляем WidgetService о смене темы
+        // Notify WidgetService the theme has changed
         Intent themeChangedIntent = new Intent("ACTION_THEME_CHANGED");
         sendBroadcast(themeChangedIntent);
 
-        // Перезапуск Activity для смены темы у UI настроек
+        // Restart Activity to apply theme
         Log.d(TAG, "Restarting activity...");
-        recreate(); // вызовет onCreate()
-    }
-
-    private int getThemeResId() {
-        int nightMode = prefs.savedNightMode.get();
-        boolean isSystemInNightMode =
-                (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
-        if (nightMode == AppCompatDelegate.MODE_NIGHT_YES ||
-                (nightMode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM && isSystemInNightMode)) {
-            return R.style.AppTheme_Night; // Night theme style
-        } else {
-            return R.style.AppTheme_Day; // Day theme style
-        }
+        recreate(); // onCreate() will be called again
     }
 
 }

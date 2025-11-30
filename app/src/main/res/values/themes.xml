@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Цвета для СВЕТЛОЙ темы -->
-    <style name="AppTheme_Day" parent="Theme.AppCompat.Light">
+    <style name="AppTheme_Day" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="ic_launcher_background">@color/ic_launcher_background</item>
 
         <item name="background">@color/background_light</item>
