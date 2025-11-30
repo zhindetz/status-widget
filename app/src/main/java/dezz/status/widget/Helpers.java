@@ -7,18 +7,53 @@ import android.util.TypedValue;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 
-import java.time.LocalDateTime;
-
 public class Helpers {
 
-    private static String TAG = "Helpers";
+    private static final String TAG = "Helpers";
 
-    public static LocalDateTime getSunriseTime(double latitude, double longitude) {
-        return LocalDateTime.now().minusHours(1); // Example of now is DAY
+    private static final TwilightCalculator twilightCalculator = new TwilightCalculator();
+
+    /**
+     * Determines whether the current time ({@link System#currentTimeMillis}) is within the night phase (night) for the given coordinates.
+     * <p>
+     * The method uses the twilight calculator {@link TwilightCalculator} to calculate the current light state
+     * based on the current system time and geographic coordinates (latitude and longitude).
+     * </p>
+     *
+     * @param latitude is the location's latitude (in degrees, for example: 55.7558 for Moscow)
+     * @param longitude is the location's longitude (in degrees, for example: 37.6176 for Moscow)
+     * @return {@code true} if it is nighttime at the specified location; {@code false} if it is daytime
+     *
+     * @see TwilightCalculator
+     * @see TwilightCalculator#calculateTwilight(long, double, double)
+     */
+    public static boolean isNightNow(double latitude, double longitude) {
+        twilightCalculator.calculateTwilight(System.currentTimeMillis(), latitude, longitude);
+        return twilightCalculator.mState == TwilightCalculator.NIGHT;
     }
-    public static LocalDateTime getSunsetTime(double latitude, double longitude) {
-        return LocalDateTime.now().plusHours(1); // Example of now is DAY
-    }
+
+    /**
+     * Returns the theme style resource ID (day or night) depending on the current application and system settings.
+     * <p>
+     * This method determines which theme should be used based on:
+     * <ul>
+     * <li>The user's selected theme mode (light, dark, system),</li>
+     * <li>The current system mode (night/day).</li>
+     * </ul>
+     *
+     * If the user selected the dark theme or "follow system" mode while the system night theme is enabled,
+     * the night theme resource {@link R.style#AppTheme_Night} is returned. Otherwise, the day theme
+     * resource {@link R.style#AppTheme_Day} is returned.
+     *
+     * @param context - the application context needed to access system settings and configuration
+     * @return the theme style resource ID ({@link R.style#AppTheme_Night} or {@link R.style#AppTheme_Day})
+     *
+     * @see Preferences#savedNightMode
+     * @see AppCompatDelegate#MODE_NIGHT_YES
+     * @see AppCompatDelegate#MODE_NIGHT_FOLLOW_SYSTEM
+     * @see Configuration#UI_MODE_NIGHT_MASK
+     * @see Configuration#UI_MODE_NIGHT_YES
+     */
     public static int getThemeResId(Context context) {
         int nightMode = (new Preferences(context)).savedNightMode.get();
         boolean isSystemInNightMode =

@@ -58,8 +58,7 @@ public class MainActivity extends AppCompatActivity {
         // Instead of AppCompatDelegate.setDefaultNightMode() select theme manually.
         // Context should be wrapped with ContextThemeWrapper for ?attr to work.
         themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this.getApplicationContext()));
-        LayoutInflater layoutInflater = LayoutInflater.from(themedContext);
-        binding = ActivityMainBinding.inflate(layoutInflater);
+        binding = ActivityMainBinding.inflate(LayoutInflater.from(themedContext));
         setContentView(binding.getRoot());
 
         initializeViews();
@@ -107,9 +106,11 @@ public class MainActivity extends AppCompatActivity {
         binding.iconStyleSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                prefs.iconStyle.set(position);
-                if (WidgetService.isRunning()) {
-                    WidgetService.getInstance().applyPreferences();
+                if (position != prefs.iconStyle.get()) {  // Check if the selected item is different from the current one. In other case applyPreferences() will be called and bring issues.
+                    prefs.iconStyle.set(position);
+                    if (WidgetService.isRunning()) {
+                        WidgetService.getInstance().applyPreferences();
+                    }
                 }
             }
 
@@ -130,21 +131,24 @@ public class MainActivity extends AppCompatActivity {
         binding.themeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position != prefs.nightModeSpinnerOption.get()) {
+                if (position != prefs.nightModeSpinnerOption.get()) { // Check if the selected item is different from the current one. In other case applyPreferences() will be called and bring issues.
                     prefs.nightModeSpinnerOption.set(position);
 
                     switch (position) {
                         case 1 -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_NO);
                         case 2 -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_YES);
+                        case 3 -> {
+                            if (WidgetService.isRunning()) {
+                                WidgetService.getInstance().saveNightModePrefBasedOnDaytimeAtCurrentLocation();
+                            }
+                        }
                         default -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                     }
-                    // Notify WidgetService the theme has changed
                     if (WidgetService.isRunning()) {
                         WidgetService.getInstance().updateOverlay();
                     }
 
-                    // Restart Main Activity to apply theme
-                    recreate();
+                    recreate(); // Restart Main Activity to apply theme
                 }
             }
 
@@ -165,9 +169,11 @@ public class MainActivity extends AppCompatActivity {
         binding.calendarAlignmentSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                prefs.calendarAlignment.set(position);
-                if (WidgetService.isRunning()) {
-                    WidgetService.getInstance().applyPreferences();
+                if (position != prefs.calendarAlignment.get()) { // Check if the selected item is different from the current one. In other case applyPreferences() will be called and bring issues.
+                    prefs.calendarAlignment.set(position);
+                    if (WidgetService.isRunning()) {
+                        WidgetService.getInstance().applyPreferences();
+                    }
                 }
             }
 

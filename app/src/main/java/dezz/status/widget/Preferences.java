@@ -48,6 +48,9 @@ public class Preferences {
         }
 
         public void set(boolean value) {
+            if (value == preferences.prefs.getBoolean(key, defaultValue)) {
+                return;
+            }
             preferences.prefs.edit().putBoolean(key, value).apply();
         }
     }
@@ -65,6 +68,9 @@ public class Preferences {
         }
 
         public void set(int value) {
+            if (value == preferences.prefs.getInt(key, defaultValue)) {
+                return;
+            }
             preferences.prefs.edit().putInt(key, value).apply();
         }
     }

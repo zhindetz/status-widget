@@ -54,11 +54,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.app.NotificationCompat;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Locale;
 
@@ -110,10 +110,11 @@ public class WidgetService extends Service {
     private static final int NOTIFICATION_ID = 1001;
     private static final String CHANNEL_ID = "WidgetServiceChannel";
     private static final long GNSS_STATUS_CHECK_INTERVAL = 1000;
+    private static final long TWILIGHT_CHECK_INTERVAL = 10000;
 
     private static WidgetService instance;
 
-    Context themedContext;
+    Context themedContext; // Required for the themed inflate, which uses attrs
 
     private Preferences prefs;
     
@@ -145,6 +146,7 @@ public class WidgetService extends Service {
     private final Runnable updateGnssStatusRunnable = new Runnable() {
         @Override
         public void run() {
+            Log.d(TAG, "Interval check of GNSS relevance (if it is outdated)");
             if (System.currentTimeMillis() - lastLocationUpdateTime > 10000) {
                 setGnssStatus(GnssState.OFF);
             } else if (System.currentTimeMillis() - lastLocationUpdateTime > 5000) {
@@ -152,6 +154,20 @@ public class WidgetService extends Service {
             }
 
             mainHandler.postDelayed(this, GNSS_STATUS_CHECK_INTERVAL);
+        }
+    };
+
+    private final Runnable updateDayNightModeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.d(TAG, "Interval check of day/night mode");
+            int initialNightMode = prefs.savedNightMode.get();
+            saveNightModePrefBasedOnDaytimeAtCurrentLocation(); // Update night mode periodically
+            if (initialNightMode != prefs.savedNightMode.get()) {
+                updateOverlay(); // Update the overlay if night mode has changed
+            }
+
+            mainHandler.postDelayed(this, TWILIGHT_CHECK_INTERVAL);
         }
     };
 
@@ -178,7 +194,7 @@ public class WidgetService extends Service {
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(@NonNull Location location) {
-//            Log.d(TAG, "Location changed: " + location);
+            Log.d(TAG, "Location changed: " + location);
             lastLocationUpdateTime = System.currentTimeMillis();
             if (location.hasAccuracy() && location.getAccuracy() < 10.0) {
                 setGnssStatus(GnssState.GOOD);
@@ -320,7 +336,7 @@ public class WidgetService extends Service {
 
         float timeOutlineWidth = Math.max(2F, prefs.timeFontSize.get() / 32F);
         float dateOutlineWidth = Math.max(2F, prefs.dateFontSize.get() / 32F);
-        int outlineColor = Helpers.getColorFromAttr(themedContext, R.attr.text_outline);
+        int outlineColor = Helpers.getColorFromAttr(themedContext, R.attr.text_outline); // Direct use of R.attr will give ID of attr, but not color
         binding.timeText.setOutlineColor(outlineColor);
         binding.timeText.setOutlineWidth(timeOutlineWidth);
         binding.dateText.setOutlineColor(outlineColor);
@@ -374,16 +390,37 @@ public class WidgetService extends Service {
             connectivityManager = null;
         }
 
-        if (prefs.showGnssIcon.get()) {
-            if (locationManager == null) {
-                locationManager = getSystemService(LocationManager.class);
+        if (prefs.showGnssIcon.get() || prefs.nightModeSpinnerOption.get() == 3) { // Settings related to locationManager
 
-                locationManager.registerGnssStatusCallback(gnssStatusCallback, mainHandler);
+            Log.d(TAG, "Location settings are triggered");
+            if (locationManager == null) { // Setup locationManager
+                locationManager = getSystemService(LocationManager.class);
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener, Looper.getMainLooper());
-                mainHandler.postDelayed(updateGnssStatusRunnable, GNSS_STATUS_CHECK_INTERVAL);
             }
-            updateGnssStatus();
-        } else if (locationManager != null) {
+            if (prefs.showGnssIcon.get()) { // Monitor GNSS status
+                locationManager.registerGnssStatusCallback(gnssStatusCallback, mainHandler);
+                if (!mainHandler.hasCallbacks(updateGnssStatusRunnable)) {
+                    mainHandler.postDelayed(updateGnssStatusRunnable, GNSS_STATUS_CHECK_INTERVAL);
+                    updateGnssStatus();
+                }
+            } else { // Do not monitor GNSS status, but still monitor location updates for day/night mode
+                if (locationManager != null) {
+                    Log.d(TAG, "Removing location updates and GNSS status callback");
+                    mainHandler.removeCallbacks(updateGnssStatusRunnable);
+                    locationManager.unregisterGnssStatusCallback(gnssStatusCallback);
+                }
+            }
+            if (prefs.nightModeSpinnerOption.get() == 3) { // Monitor day/nighttime at current location
+                if (!mainHandler.hasCallbacks(updateDayNightModeRunnable)) {
+                    mainHandler.postDelayed(updateDayNightModeRunnable, TWILIGHT_CHECK_INTERVAL);
+                }
+            } else { // Do not monitor day/nighttime but still monitor location updates for GNSS status
+                Log.d(TAG, "Removing day/night mode update");
+                mainHandler.removeCallbacks(updateDayNightModeRunnable);
+            }
+        } else if (locationManager != null) { // locationManager is not needed anymore
+            Log.d(TAG, "Removing all location callbacks");
+            mainHandler.removeCallbacks(updateDayNightModeRunnable);
             mainHandler.removeCallbacks(updateGnssStatusRunnable);
             locationManager.removeUpdates(locationListener);
             locationManager.unregisterGnssStatusCallback(gnssStatusCallback);
@@ -391,9 +428,11 @@ public class WidgetService extends Service {
         }
     }
 
+    // It is not good to update preferences from Service class, but it already has locationManager
+    // and Runnable for interval check.
     @SuppressLint("MissingPermission")
-    private void isItDayOrNightBasedOnSunriseSunsetAtCurrentLocation() {
-        // You will need permissions checks before running this code in a real app
+    protected void saveNightModePrefBasedOnDaytimeAtCurrentLocation() {
+        Log.d(TAG, "Setting night mode based on sunrise/sunset");
         if (locationManager == null) {
             locationManager = getSystemService(LocationManager.class);
         }
@@ -405,50 +444,15 @@ public class WidgetService extends Service {
         }
 
         if (lastKnownLocation != null) {
-            double latitude = lastKnownLocation.getLatitude();
-            double longitude = lastKnownLocation.getLongitude();
-            // Proceed to calculate sunrise/sunset
-            updateOverlay(latitude, longitude);
-        } else {
-            // Handle the case where location is unavailable
-        }
-    }
-    private void updateOverlay(double latitude, double longitude) {
-        // ... remove existing views ...
-
-        boolean isDay = isDaytime(latitude, longitude, this); // Call your calculation method
-
-        int themeResId;
-        if (isDay) {
-            themeResId = R.style.AppTheme_Day; // Your Day theme style
-        } else {
-            themeResId = R.style.AppTheme_Night; // Your Night theme style
-        }
-        //TODO Слить с текущей логикой
-        updateOverlay();
-    }
-
-    public boolean isDaytime(double latitude, double longitude, Context context) {
-        if (Double.isNaN(latitude) || Double.isNaN(longitude)) {
-            return true; // Default to day if location is invalid
-        }
-
-        try {
-            // Use an existing library or a ported algorithm implementation here.
-            // The Android framework actually has a private TwilightCalculator class internally,
-            // which you cannot directly access. You must use a public implementation.
-
-            // Placeholder for calculation logic
-            LocalDateTime sunrise = Helpers.getSunriseTime(latitude, longitude); // Your implementation needed
-            LocalDateTime sunset = Helpers.getSunsetTime(latitude, longitude);   // Your implementation needed
-            LocalDateTime now = LocalDateTime.now();
-
-            // Check if current time is after sunrise and before sunset
-            return now.isAfter(sunrise) && now.isBefore(sunset);
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error calculating day/night", e);
-            return true; // Default to day on error
+            Log.d(TAG, "Last known location: " + lastKnownLocation);
+            prefs.savedNightMode.set(
+                    Helpers.isNightNow(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude())
+                            ? AppCompatDelegate.MODE_NIGHT_YES
+                            : AppCompatDelegate.MODE_NIGHT_NO
+            );
+        } else if (prefs.savedNightMode.get() == -1) {
+            Log.d(TAG, "No location available, defaulting to follow system");
+            prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         }
     }
 
@@ -594,10 +598,13 @@ public class WidgetService extends Service {
         super.onDestroy();
         instance = null;
 
+        mainHandler.removeCallbacks(updateDayNightModeRunnable);
         mainHandler.removeCallbacks(updateGnssStatusRunnable);
         mainHandler.removeCallbacks(updateDateTimeRunnable);
 
-        if (binding != null && binding.getRoot().getParent() != null && windowManager != null) {
+        if (binding != null
+                && binding.getRoot().getParent() != null // Check if the view is attached to a parent to avoid IllegalArgumentException
+                && windowManager != null) {
             windowManager.removeView(binding.getRoot());
         }
 

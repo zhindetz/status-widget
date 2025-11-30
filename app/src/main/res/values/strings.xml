@@ -32,7 +32,7 @@
         <item>System</item>
         <item>Day</item>
         <item>Night</item>
-        <!--item>Dawn/Dusk</item-->
+        <item>Dawn/Dusk</item>
     </string-array>
 
     <string name="icon_size">Icon sizes</string>

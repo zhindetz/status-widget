@@ -32,7 +32,7 @@
         <item>Как в системе</item>
         <item>День</item>
         <item>Ночь</item>
-        <!--item>Рассвет/Закат</item-->
+        <item>Рассвет/Закат</item>
     </string-array>
 
     <string name="icon_size">Размер иконок</string>
