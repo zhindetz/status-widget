@@ -23,10 +23,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
@@ -227,14 +225,6 @@ public class WidgetService extends Service {
         }
     };
 
-    private final BroadcastReceiver themeChangedReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "Theme changed detected. Re-inflating overlay view.");
-            updateOverlay(); // Пересоздаём вьюшку с новыми цветами
-        }
-    };
-
     @Override
     public void onCreate() {
         prefs = new Preferences(this);
@@ -247,9 +237,6 @@ public class WidgetService extends Service {
         }
 
         instance = this;
-
-        // Receiver for theme changes
-        registerReceiver(themeChangedReceiver, new IntentFilter("ACTION_THEME_CHANGED"));
 
         windowManager = getSystemService(WindowManager.class);
 
@@ -300,7 +287,7 @@ public class WidgetService extends Service {
         }
     }
 
-    private void updateOverlay() {
+    protected void updateOverlay() {
         if (binding == null) return;
         Log.d(TAG, "Updating overlay view");
 
@@ -353,7 +340,7 @@ public class WidgetService extends Service {
             case 2 -> binding.dateText.setGravity(Gravity.END);
             default -> binding.dateText.setGravity(Gravity.START);
         }
-        // Icons (GPS and WiFi)
+        // Icons (GPS and Wi-Fi)
         binding.wifiStatusIcon.setVisibility(prefs.showWifiIcon.get() ? View.VISIBLE : View.GONE);
         binding.gnssStatusIcon.setVisibility(prefs.showGnssIcon.get() ? View.VISIBLE : View.GONE);
 
@@ -609,7 +596,6 @@ public class WidgetService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(themeChangedReceiver);
         instance = null;
 
         mainHandler.removeCallbacks(updateGnssStatusRunnable);

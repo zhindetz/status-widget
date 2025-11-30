@@ -19,12 +19,10 @@ package dezz.status.widget;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -42,7 +40,6 @@ import java.util.List;
 import dezz.status.widget.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
     public static final int PERMISSION_REQUEST_CODE = 1001;
     public static final int OVERLAY_PERMISSION_REQUEST_CODE = 1002;
 
@@ -54,8 +51,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        prefs = new Preferences(this);
         super.onCreate(savedInstanceState);
+
+        prefs = new Preferences(this);
+
         // Instead of AppCompatDelegate.setDefaultNightMode() select theme manually.
         // Context should be wrapped with ContextThemeWrapper for ?attr to work.
         themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this.getApplicationContext()));
@@ -132,7 +131,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (position != prefs.nightModeSpinnerOption.get()) {
-                    saveNightModeAndRestart(position);
+                    prefs.nightModeSpinnerOption.set(position);
+
+                    switch (position) {
+                        case 1 -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_NO);
+                        case 2 -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_YES);
+                        default -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                    }
+                    // Notify WidgetService the theme has changed
+                    if (WidgetService.isRunning()) {
+                        WidgetService.getInstance().updateOverlay();
+                    }
+
+                    // Restart Main Activity to apply theme
+                    recreate();
                 }
             }
 
@@ -241,32 +253,6 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         }
-    }
-
-    // Is called when user changes theme in the dropdown
-    private void saveNightModeAndRestart(int themeSpinnerOption) {
-        Log.d(TAG, "Saving NightMode spinner option: " + themeSpinnerOption + " and restarting activity");
-        prefs.nightModeSpinnerOption.set(themeSpinnerOption);
-
-        switch (themeSpinnerOption) {
-            case 1:
-                prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_NO);
-                break;
-            case 2:
-                prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_YES);
-                break;
-            case 0:
-            default:
-                prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                break;
-        }
-        // Notify WidgetService the theme has changed
-        Intent themeChangedIntent = new Intent("ACTION_THEME_CHANGED");
-        sendBroadcast(themeChangedIntent);
-
-        // Restart Activity to apply theme
-        Log.d(TAG, "Restarting activity...");
-        recreate(); // onCreate() will be called again
     }
 
 }
