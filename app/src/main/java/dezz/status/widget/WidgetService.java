@@ -287,19 +287,15 @@ public class WidgetService extends Service {
         }
     }
 
-    protected void updateOverlay() {
-        if (binding == null) return;
-        Log.d(TAG, "Updating overlay view");
-
-        windowManager.removeView(binding.getRoot());
-        createOverlayView(); // Recreate the view with new themed context
-//        applyPreferences(); // Set preferences again //TODO: Check if this really needed, since it is already in createOverlayView()
-    }
-
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         Log.d(TAG, "Configuration changed");
+        updateOverlay();
+    }
+
+    protected void updateOverlay() {
+        Log.d(TAG, "Updating overlay view");
         if (binding != null) {
             windowManager.removeView(binding.getRoot());
             createOverlayView();
