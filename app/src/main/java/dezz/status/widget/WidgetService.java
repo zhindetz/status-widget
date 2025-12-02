@@ -279,7 +279,7 @@ public class WidgetService extends Service {
         binding.getRoot().setVisibility(View.VISIBLE);
         binding.getRoot().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             int backgroundCornerRadius = Math.min(binding.getRoot().getWidth(), binding.getRoot().getHeight()) / 2;
-            int backgroundColor = ContextCompat.getColor(themedContext, Helpers.getColorFromAttr(themedContext, R.attr.widget_background)) & 0x00FFFFFF | (prefs.backgroundAlpha.get() << 24);
+            int backgroundColor = Helpers.getColorFromAttr(themedContext, R.attr.widget_background) & 0x00FFFFFF | (prefs.backgroundAlpha.get() << 24);
             binding.overlayContainer.setBackground(getBackground(backgroundColor, backgroundCornerRadius));
         });
 

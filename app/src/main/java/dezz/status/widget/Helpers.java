@@ -66,7 +66,25 @@ public class Helpers {
         }
     }
 
-    // Required for resolving color attributes programmatically, since R.attr will give ID of attr, but not color.
+    /**
+     * Returns the color associated with the specified theme attribute.
+     * Instead of using {@link ContextCompat#getColor(Context, int)} directly, this method is used to resolve color attributes.
+     * <p>
+     * ContextCompat.getColor(this, R.color.text_primary) should be replaced with getColorFromAttr(themedContext, R.attr.text_primary)
+     * <p>
+     * The method attempts to resolve the theme attribute to color. If the attribute refers directly to a color value
+     * (eg #FF0000), this value is returned. If the attribute refers to a color resource (for example, @color/red),
+     * method resolves this resource and returns the corresponding color.
+     *
+     * @param context the themed context of the application or activity used to access the topic and resources
+     * @param attr identifier of the theme attribute (e.g. R.attr.text_primary) that should be resolved to color
+     * @return the color in int format (e.g. 0xFFAARRGGBB) corresponding to the specified attribute
+     * @throws IllegalArgumentException if the specified attribute cannot be found or resolved
+     *
+     * @see TypedValue#TYPE_FIRST_COLOR_INT
+     * @see TypedValue#TYPE_LAST_COLOR_INT
+     * @see ContextCompat#getColor(Context, int)
+     */
     public static int getColorFromAttr(Context context, int attr) {
         TypedValue typedValue = new TypedValue();
         if (context.getTheme().resolveAttribute(attr, typedValue, true)) {
