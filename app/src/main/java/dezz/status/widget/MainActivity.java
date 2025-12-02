@@ -182,6 +182,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Calendar alignment dropdown
+        ArrayAdapter<String> calendarAlignmentAdapter = new ArrayAdapter<>(
+                this,
+                R.layout.spinner_dropdown_item,
+                getResources().getStringArray(R.array.calendar_alignment_types)
+        );
+        calendarAlignmentAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        binding.calendarAlignmentSpinner.setAdapter(calendarAlignmentAdapter);
+        binding.calendarAlignmentSpinner.setSelection(prefs.calendarAlignment.get());
+        binding.calendarAlignmentSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                prefs.calendarAlignment.set(position);
+                if (WidgetService.isRunning()) {
+                    WidgetService.getInstance().applyPreferences();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
         ViewBinder binder = new ViewBinder(this);
 
         binder.bindCheckbox(binding.showDateSwitch, prefs.showDate);
@@ -196,6 +219,8 @@ public class MainActivity extends AppCompatActivity {
         binder.bindSizeSeekbar(binding.timeFontSizeSeekBar, binding.timeFontSizeValueText, prefs.timeFontSize);
         binder.bindSizeSeekbar(binding.dateFontSizeSeekBar, binding.dateFontSizeValueText, prefs.dateFontSize);
         binder.bindSizeSeekbar(binding.spacingBetweenTextsAndIconsSeekBar, binding.spacingBetweenTextsAndIconsValueText, prefs.spacingBetweenTextsAndIcons);
+        binder.bindColorComponentSeekbar(binding.textOutlineAlphaSeekBar, binding.textOutlineAlphaValueText, prefs.textOutlineAlpha);
+        binder.bindColorComponentSeekbar(binding.backgroundAlphaSeekBar, binding.backgroundAlphaValueText, prefs.backgroundAlpha);
         binder.bindOffsetSeekbar(binding.adjustTimeYSeekBar, binding.adjustTimeYValueText, prefs.adjustTimeY);
         binder.bindOffsetSeekbar(binding.adjustDateYSeekBar, binding.adjustDateYValueText, prefs.adjustDateY);
     }

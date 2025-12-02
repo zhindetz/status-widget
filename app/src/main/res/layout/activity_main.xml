@@ -293,7 +293,8 @@
                     android:layout_marginTop="@dimen/optionsMarginBig"
                     android:text="@string/icon_size"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel" />
+                    android:textSize="@dimen/optionsTextSizeLabel"
+                    android:minHeight="@dimen/optionsLineHeight" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -353,6 +354,76 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:text="@string/size_value_format"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="@dimen/optionsTextSizeLabel" />
+                </LinearLayout>
+
+                <!-- Text outline transparency -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_outline_transparency"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="@dimen/optionsTextSizeLabel" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <SeekBar
+                        android:id="@+id/textOutlineAlphaSeekBar"
+                        android:layout_width="0sp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/optionsMarginSmall"
+                        android:layout_weight="1"
+                        android:layout_gravity="center_vertical"
+                        android:max="255"
+                        android:min="0"
+                        android:progress="0xAA"
+                        android:minHeight="@dimen/optionsLineHeight" />
+
+                    <TextView
+                        android:id="@+id/textOutlineAlphaValueText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/color_component_value_format"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="@dimen/optionsTextSizeLabel" />
+                </LinearLayout>
+
+                <!-- Background transparency -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/background_transparency"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="@dimen/optionsTextSizeLabel" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <SeekBar
+                        android:id="@+id/backgroundAlphaSeekBar"
+                        android:layout_width="0sp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/optionsMarginSmall"
+                        android:layout_weight="1"
+                        android:layout_gravity="center_vertical"
+                        android:max="255"
+                        android:min="0"
+                        android:progress="0xAA"
+                        android:minHeight="@dimen/optionsLineHeight" />
+
+                    <TextView
+                        android:id="@+id/backgroundAlphaValueText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/color_component_value_format"
                         android:textColor="?attr/text_primary"
                         android:textSize="@dimen/optionsTextSizeLabel" />
                 </LinearLayout>

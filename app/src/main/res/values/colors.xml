@@ -19,6 +19,7 @@
 <resources>
     <color name="ic_launcher_background">#FFFFFF</color>
 
+    <color name="widget_background_light">#FFFFFF</color>
     <color name="background_light">#F5F5F5</color>
     <color name="card_background_light">@android:color/background_light</color>
     <color name="header_background_light">#E0E0E0</color>
@@ -27,6 +28,7 @@
     <color name="text_outline_light">#AAFFFFFF</color>
 
 
+    <color name="widget_background_dark">#000000</color>
     <color name="background_dark">#121212</color>
     <color name="card_background_dark">@android:color/background_dark</color>
     <color name="header_background_dark">#2C2C2C</color>

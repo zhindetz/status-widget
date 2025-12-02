@@ -28,6 +28,8 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.location.GnssStatus;
 import android.location.Location;
 import android.location.LocationListener;
@@ -74,25 +76,25 @@ public class WidgetService extends Service {
     }
 
     private static final int[] GNSS_ICONS_MONO = {
-        R.drawable.ic_mono_gps_off,
-        R.drawable.ic_mono_gps_bad,
-        R.drawable.ic_mono_gps_good
+            R.drawable.ic_mono_gps_off,
+            R.drawable.ic_mono_gps_bad,
+            R.drawable.ic_mono_gps_good
     };
     private static final int[] WIFI_ICONS_MONO = {
-        R.drawable.ic_mono_wifi_off,
-        R.drawable.ic_mono_wifi_no_internet,
-        R.drawable.ic_mono_wifi_internet
+            R.drawable.ic_mono_wifi_off,
+            R.drawable.ic_mono_wifi_no_internet,
+            R.drawable.ic_mono_wifi_internet
     };
 
     private static final int[] GNSS_ICONS_COLOR = {
-        R.drawable.ic_color_gps_off,
-        R.drawable.ic_color_gps_bad,
-        R.drawable.ic_color_gps_good
+            R.drawable.ic_color_gps_off,
+            R.drawable.ic_color_gps_bad,
+            R.drawable.ic_color_gps_good
     };
     private static final int[] WIFI_ICONS_COLOR = {
-        R.drawable.ic_color_wifi_off,
-        R.drawable.ic_color_wifi_no_internet,
-        R.drawable.ic_color_wifi_internet
+            R.drawable.ic_color_wifi_off,
+            R.drawable.ic_color_wifi_no_internet,
+            R.drawable.ic_color_wifi_internet
     };
 
     private static final int[] GNSS_ICONS_MONOCOLOR = {
@@ -117,7 +119,7 @@ public class WidgetService extends Service {
     Context themedContext; // Required for the themed inflate, which uses attrs
 
     private Preferences prefs;
-    
+
     private WindowManager windowManager;
     private WindowManager.LayoutParams params;
 
@@ -134,6 +136,10 @@ public class WidgetService extends Service {
     private LocationManager locationManager = null;
     private ConnectivityManager connectivityManager = null;
     private long lastLocationUpdateTime = 0;
+
+    private GradientDrawable background = null;
+    private int bgColor = -1;
+    private int bgCornerRadius = -1;
 
     private final Runnable updateDateTimeRunnable = new Runnable() {
         @Override
@@ -196,7 +202,7 @@ public class WidgetService extends Service {
         public void onLocationChanged(@NonNull Location location) {
             Log.d(TAG, "Location changed: " + location);
             lastLocationUpdateTime = System.currentTimeMillis();
-            if (location.hasAccuracy() && location.getAccuracy() < 10.0) {
+            if (location.hasAccuracy() && location.getAccuracy() < 20.0) {
                 setGnssStatus(GnssState.GOOD);
             } else {
                 setGnssStatus(GnssState.BAD);
@@ -271,6 +277,11 @@ public class WidgetService extends Service {
 
         binding = OverlayStatusWidgetBinding.inflate(layoutInflater);
         binding.getRoot().setVisibility(View.VISIBLE);
+        binding.getRoot().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            int backgroundCornerRadius = Math.min(binding.getRoot().getWidth(), binding.getRoot().getHeight()) / 2;
+            int backgroundColor = ContextCompat.getColor(themedContext, Helpers.getColorFromAttr(themedContext, R.attr.widget_background)) & 0x00FFFFFF | (prefs.backgroundAlpha.get() << 24);
+            binding.overlayContainer.setBackground(getBackground(backgroundColor, backgroundCornerRadius));
+        });
 
         applyPreferences();
 
@@ -323,6 +334,11 @@ public class WidgetService extends Service {
         updateDateTime();
 
         int iconSize = prefs.iconSize.get();
+        int timeFontSize = prefs.timeFontSize.get();
+        int dateFontSize = prefs.dateFontSize.get();
+        int padding = Math.max(iconSize, Math.max(timeFontSize, dateFontSize)) / 2;
+
+        binding.getRoot().setPadding(padding, 0, padding, 0);
 
         ViewGroup.LayoutParams iconParams = binding.wifiStatusIcon.getLayoutParams();
         iconParams.width = iconSize;
@@ -336,7 +352,7 @@ public class WidgetService extends Service {
 
         float timeOutlineWidth = Math.max(2F, prefs.timeFontSize.get() / 32F);
         float dateOutlineWidth = Math.max(2F, prefs.dateFontSize.get() / 32F);
-        int outlineColor = Helpers.getColorFromAttr(themedContext, R.attr.text_outline); // Direct use of R.attr will give ID of attr, but not color
+        int outlineColor = Helpers.getColorFromAttr(themedContext, R.attr.text_outline) & 0x00FFFFFF | (prefs.textOutlineAlpha.get() << 24); // Direct use of R.attr will give ID of attr, but not color
         binding.timeText.setOutlineColor(outlineColor);
         binding.timeText.setOutlineWidth(timeOutlineWidth);
         binding.dateText.setOutlineColor(outlineColor);
@@ -346,12 +362,14 @@ public class WidgetService extends Service {
         binding.dateText.setTextSize(TypedValue.COMPLEX_UNIT_PX, prefs.dateFontSize.get());
         binding.timeText.setVisibility(prefs.showTime.get() ? View.VISIBLE : View.GONE);
         binding.dateText.setVisibility(prefs.showDate.get() || prefs.showDayOfTheWeek.get() ? View.VISIBLE : View.GONE);
+
         // Calendar alignment
         switch (prefs.calendarAlignment.get()) {
             case 1 -> binding.dateText.setGravity(Gravity.CENTER_HORIZONTAL);
             case 2 -> binding.dateText.setGravity(Gravity.END);
             default -> binding.dateText.setGravity(Gravity.START);
         }
+
         // Icons (GPS and Wi-Fi)
         binding.wifiStatusIcon.setVisibility(prefs.showWifiIcon.get() ? View.VISIBLE : View.GONE);
         binding.gnssStatusIcon.setVisibility(prefs.showGnssIcon.get() ? View.VISIBLE : View.GONE);
@@ -454,6 +472,18 @@ public class WidgetService extends Service {
             Log.d(TAG, "No location available, defaulting to follow system");
             prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         }
+    }
+
+    private Drawable getBackground(int color, int cornerRadius) {
+        if (this.background == null || color != this.bgColor || cornerRadius != this.bgCornerRadius) {
+            this.background = new GradientDrawable();
+            this.background.setColor(color);
+            this.background.setCornerRadius(cornerRadius);
+            this.bgColor = color;
+            this.bgCornerRadius = cornerRadius;
+        }
+
+        return this.background;
     }
 
     private void updateDateTime() {
