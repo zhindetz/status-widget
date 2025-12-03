@@ -55,7 +55,7 @@ public class Helpers {
      * @see Configuration#UI_MODE_NIGHT_YES
      */
     public static int getThemeResId(Context context) {
-        int nightMode = (new Preferences(context)).savedNightMode.get();
+        int nightMode = Preferences.getInstance(context).savedNightMode.get();
         boolean isSystemInNightMode =
                 (context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         if (nightMode == AppCompatDelegate.MODE_NIGHT_YES ||

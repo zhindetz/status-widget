@@ -9,4 +9,9 @@
     <attr name="text_primary" format="color" />
     <attr name="text_secondary" format="color" />
     <attr name="text_outline" format="color" />
+
+    <attr name="gib_icon_disabled" format="color" />
+    <attr name="gib_icon_enabled" format="color" />
+    <attr name="gib_icon_heat" format="color" />
+    <attr name="gib_icon_cool" format="color" />
 </resources>

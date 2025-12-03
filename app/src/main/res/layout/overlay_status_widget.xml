@@ -59,15 +59,94 @@
 
     </LinearLayout>
 
-    <!-- Wi-Fi Status -->
-    <ImageView
-        android:id="@+id/wifiStatusIcon"
-        android:layout_width="100sp"
-        android:layout_height="100sp"
+    <!-- GIB Indicators -->
+    <LinearLayout
+        android:id="@+id/gibIndicators"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:paddingHorizontal="4sp"
-        android:src="@drawable/ic_mono_wifi_off"
-        tools:ignore="ContentDescription" />
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/gibCycle"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="4sp"
+            android:src="@drawable/ic_gib_cycle_outer"
+            tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/gibAcMax"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="4sp"
+            android:src="@drawable/ic_gib_ac_max_off"
+            tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/gibElectricDefrost"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="4sp"
+            android:src="@drawable/ic_gib_electric_defrost_off"
+            tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/gibFrontDefrost"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="4sp"
+            android:src="@drawable/ic_gib_front_defrost_off"
+            tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/gibBehindDefrost"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="4sp"
+            android:src="@drawable/ic_gib_behind_defrost_off"
+            tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/gibSteeringWheel"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="4sp"
+            android:src="@drawable/ic_gib_steering_wheel_off"
+            tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/gibSeatFrontLeft"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="4sp"
+            android:src="@drawable/ic_gib_seat_left_off"
+            tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/gibSeatFrontRight"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="4sp"
+            android:src="@drawable/ic_gib_seat_right_off"
+            tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/gibSeatRearLeft"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="4sp"
+            android:src="@drawable/ic_gib_seat_left_off"
+            tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/gibSeatRearRight"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:layout_gravity="center_vertical"
+            android:paddingHorizontal="4sp"
+            android:src="@drawable/ic_gib_seat_right_off"
+            tools:ignore="ContentDescription" />
+    </LinearLayout>
 
     <!-- GNSS Status -->
     <ImageView
@@ -77,5 +156,15 @@
         android:layout_gravity="center_vertical"
         android:paddingHorizontal="4sp"
         android:src="@drawable/ic_mono_gps_off"
+        tools:ignore="ContentDescription" />
+
+    <!-- Wi-Fi Status -->
+    <ImageView
+        android:id="@+id/wifiStatusIcon"
+        android:layout_width="100sp"
+        android:layout_height="100sp"
+        android:layout_gravity="center_vertical"
+        android:paddingHorizontal="4sp"
+        android:src="@drawable/ic_mono_wifi_off"
         tools:ignore="ContentDescription" />
 </LinearLayout>

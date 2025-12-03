@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        prefs = new Preferences(this);
+        prefs = Preferences.getInstance(this);
 
         // Instead of AppCompatDelegate.setDefaultNightMode() select theme manually.
         // Context should be wrapped with ContextThemeWrapper for ?attr to work.
@@ -189,6 +189,8 @@ public class MainActivity extends AppCompatActivity {
         binder.bindCheckbox(binding.showDaySwitch, prefs.showDayOfTheWeek);
         binder.bindCheckbox(binding.showWiFiSwitch, prefs.showWifiIcon);
         binder.bindCheckbox(binding.showGnssSwitch, prefs.showGnssIcon);
+        binder.bindCheckbox(binding.showGibSwitch, prefs.showGibIndicators);
+        binder.bindCheckbox(binding.showGibAlwaysSwitch, prefs.showGibIndicatorsAlways);
         binder.bindCheckbox(binding.showFullDayAndMonthSwitch, prefs.showFullDayAndMonth);
         binder.bindCheckbox(binding.oneLineLayoutSwitch, prefs.oneLineLayout);
 
@@ -200,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
         binder.bindColorComponentSeekbar(binding.backgroundAlphaSeekBar, binding.backgroundAlphaValueText, prefs.backgroundAlpha);
         binder.bindOffsetSeekbar(binding.adjustTimeYSeekBar, binding.adjustTimeYValueText, prefs.adjustTimeY);
         binder.bindOffsetSeekbar(binding.adjustDateYSeekBar, binding.adjustDateYValueText, prefs.adjustDateY);
+        binder.bindOffsetSeekbar(binding.adjustGibIndicatorsYSeekBar, binding.adjustGibIndicatorsYValueText, prefs.adjustGibIndicatorsY);
     }
 
     private void startWidgetService() {

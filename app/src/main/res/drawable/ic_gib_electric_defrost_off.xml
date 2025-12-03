@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:height="64dp"
+    android:width="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M33.316,19.273C41.798,19.273 50.094,23.163 58.237,30.845L47.373,48.029C42.633,44.45 37.941,42.691 33.316,42.691C28.663,42.691 24.008,44.469 19.368,48.087L5.89,30.854C15.678,23.166 24.811,19.273 33.316,19.273Z"
+        android:strokeColor="?attr/gib_icon_disabled"
+        android:strokeWidth="@dimen/gibIconStrokeWidth"
+        android:fillType="evenOdd"
+        android:strokeLineJoin="round"/>
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M10.412,35.091L19.42,34.836L23.302,27.712L27.687,37.241L31.673,28.262L35.521,36.581L39.208,28.262L41.847,34.223L54.871,34.302"
+        android:strokeColor="?attr/gib_icon_disabled"
+        android:strokeWidth="@dimen/gibIconStrokeWidth"
+        android:strokeLineCap="square"/>
+</vector>

@@ -62,6 +62,7 @@ import androidx.core.app.NotificationCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import dezz.status.widget.databinding.OverlayStatusWidgetBinding;
@@ -108,6 +109,83 @@ public class WidgetService extends Service {
             R.drawable.ic_monocolor_wifi_internet
     };
 
+    private static final int[] GNSS_ICONS_MATERIAL = {
+            R.drawable.ic_material_gps_off,
+            R.drawable.ic_material_gps_bad,
+            R.drawable.ic_material_gps_good
+    };
+    private static final int[] WIFI_ICONS_MATERIAL = {
+            R.drawable.ic_material_wifi_off,
+            R.drawable.ic_material_wifi_no_internet,
+            R.drawable.ic_material_wifi_internet
+    };
+
+
+    protected enum GibCycleState {
+        OUTER, INNER
+    }
+    protected static final int[] GIB_ICONS_CYCLE = {
+            R.drawable.ic_gib_cycle_outer,
+            R.drawable.ic_gib_cycle_inner
+    };
+    protected enum GibPlainState {
+        OFF, ON
+    }
+    protected static final int[] GIB_ICONS_AC_MAX = {
+            R.drawable.ic_gib_ac_max_off,
+            R.drawable.ic_gib_ac_max_on
+    };
+    protected static final int[] GIB_ICONS_ELECTRIC_DEFROST = {
+            R.drawable.ic_gib_electric_defrost_off,
+            R.drawable.ic_gib_electric_defrost_on
+    };
+    protected static final int[] GIB_ICONS_FRONT_DEFROST = {
+            R.drawable.ic_gib_front_defrost_off,
+            R.drawable.ic_gib_front_defrost_on
+    };
+    protected static final int[] GIB_ICONS_BEHIND_DEFROST = {
+            R.drawable.ic_gib_behind_defrost_off,
+            R.drawable.ic_gib_behind_defrost_on
+    };
+    protected enum GibSeatState {
+        OFF, COOL0, COOL1, COOL2, COOL3, HEAT0, HEAT1, HEAT2, HEAT3
+    }
+
+    protected static final int[] GIB_ICONS_SEAT_LEFT = {
+            R.drawable.ic_gib_seat_left_off,
+            R.drawable.ic_gib_seat_left_cool0,
+            R.drawable.ic_gib_seat_left_cool1,
+            R.drawable.ic_gib_seat_left_cool2,
+            R.drawable.ic_gib_seat_left_cool3,
+            R.drawable.ic_gib_seat_left_heat0,
+            R.drawable.ic_gib_seat_left_heat1,
+            R.drawable.ic_gib_seat_left_heat2,
+            R.drawable.ic_gib_seat_left_heat3
+    };
+
+    protected static final int[] GIB_ICONS_SEAT_RIGHT = {
+            R.drawable.ic_gib_seat_right_off,
+            R.drawable.ic_gib_seat_right_cool0,
+            R.drawable.ic_gib_seat_right_cool1,
+            R.drawable.ic_gib_seat_right_cool2,
+            R.drawable.ic_gib_seat_right_cool3,
+            R.drawable.ic_gib_seat_right_heat0,
+            R.drawable.ic_gib_seat_right_heat1,
+            R.drawable.ic_gib_seat_right_heat2,
+            R.drawable.ic_gib_seat_right_heat3
+    };
+
+    protected enum GibSteeringWheelState {
+        OFF, HEAT0, HEAT1, HEAT2, HEAT3
+    }
+    protected static final int[] GIB_ICONS_STEERING_WHEEL = {
+            R.drawable.ic_gib_steering_wheel_off,
+            R.drawable.ic_gib_steering_wheel_heat0,
+            R.drawable.ic_gib_steering_wheel_heat1,
+            R.drawable.ic_gib_steering_wheel_heat2,
+            R.drawable.ic_gib_steering_wheel_heat3
+    };
+
     private static final String TAG = "WidgetService";
     private static final int NOTIFICATION_ID = 1001;
     private static final String CHANNEL_ID = "WidgetServiceChannel";
@@ -131,6 +209,16 @@ public class WidgetService extends Service {
     private float initialTouchY;
     private GnssState gnssState = GnssState.OFF;
     private WiFiState wifiState = WiFiState.OFF;
+    private GibCycleState gibCycleState = GibCycleState.OUTER;
+    private GibPlainState gibAcMaxState = GibPlainState.OFF;
+    private GibPlainState gibElectricDefrostState = GibPlainState.OFF;
+    private GibPlainState gibFrontDefrostState = GibPlainState.OFF;
+    private GibPlainState gibBehindDefrostState = GibPlainState.OFF;
+    private GibSteeringWheelState gibSteeringWheelState = GibSteeringWheelState.OFF;
+    private GibSeatState gibSeatFLState = GibSeatState.OFF;
+    private GibSeatState gibSeatFRState = GibSeatState.OFF;
+    private GibSeatState gibSeatRLState = GibSeatState.OFF;
+    private GibSeatState gibSeatRRState = GibSeatState.OFF;
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private LocationManager locationManager = null;
@@ -140,6 +228,8 @@ public class WidgetService extends Service {
     private GradientDrawable background = null;
     private int bgColor = -1;
     private int bgCornerRadius = -1;
+
+    private GibManager gibManager;
 
     private final Runnable updateDateTimeRunnable = new Runnable() {
         @Override
@@ -249,7 +339,7 @@ public class WidgetService extends Service {
 
     @Override
     public void onCreate() {
-        prefs = new Preferences(this);
+        prefs = Preferences.getInstance(this.getApplicationContext());
         if (!Permissions.allPermissionsGranted(this)) {
             prefs.widgetEnabled.set(false);
             Toast.makeText(this, R.string.permissions_required, Toast.LENGTH_LONG).show();
@@ -373,13 +463,18 @@ public class WidgetService extends Service {
         // Icons (GPS and Wi-Fi)
         binding.wifiStatusIcon.setVisibility(prefs.showWifiIcon.get() ? View.VISIBLE : View.GONE);
         binding.gnssStatusIcon.setVisibility(prefs.showGnssIcon.get() ? View.VISIBLE : View.GONE);
+        binding.gibIndicators.setVisibility(prefs.showGibIndicators.get() ? View.VISIBLE : View.GONE);
 
         LinearLayout.LayoutParams dateTimeLayoutParams = (LinearLayout.LayoutParams) binding.dateTimeContainer.getLayoutParams();
         dateTimeLayoutParams.setMargins(0, 0, prefs.spacingBetweenTextsAndIcons.get(), 0);
         binding.dateTimeContainer.setLayoutParams(dateTimeLayoutParams);
 
+        ((LinearLayout.LayoutParams) binding.gibIndicators.getLayoutParams())
+                .setMargins(0, 0, prefs.spacingBetweenTextsAndIcons.get(), 0);
+
         binding.timeText.setTranslationY(prefs.adjustTimeY.get());
         binding.dateText.setTranslationY(prefs.adjustDateY.get());
+        binding.gibIndicators.setTranslationY(prefs.adjustGibIndicatorsY.get());
 
         mainHandler.removeCallbacks(updateDateTimeRunnable);
         if (prefs.showDate.get() || prefs.showTime.get()) {
@@ -443,6 +538,71 @@ public class WidgetService extends Service {
             locationManager.removeUpdates(locationListener);
             locationManager.unregisterGnssStatusCallback(gnssStatusCallback);
             locationManager = null;
+        }
+
+        if (prefs.showGibIndicators.get()) {
+            if (gibManager == null) {
+                gibManager = GibManager.getInstance(this);
+            }
+            binding.gibCycle.setLayoutParams(iconParams);
+            binding.gibAcMax.setLayoutParams(iconParams);
+            binding.gibElectricDefrost.setLayoutParams(iconParams);
+            binding.gibFrontDefrost.setLayoutParams(iconParams);
+            binding.gibBehindDefrost.setLayoutParams(iconParams);
+            binding.gibSteeringWheel.setLayoutParams(iconParams);
+            binding.gibSeatFrontLeft.setLayoutParams(iconParams);
+            binding.gibSeatFrontRight.setLayoutParams(iconParams);
+            binding.gibSeatRearLeft.setLayoutParams(iconParams);
+            binding.gibSeatRearRight.setLayoutParams(iconParams);
+            Log.d(TAG, "GIB индикаторы включены");
+        } else if (gibManager != null) {
+            gibManager.unregister();
+            gibManager = null;
+            Log.d(TAG, "GIB индикаторы выключены");
+        }
+
+        if (prefs.showGibIndicatorsAlways.get()) {
+            binding.gibCycle.setVisibility(View.VISIBLE);
+            binding.gibAcMax.setVisibility(View.VISIBLE);
+            binding.gibElectricDefrost.setVisibility(View.VISIBLE);
+            binding.gibFrontDefrost.setVisibility(View.VISIBLE);
+            binding.gibBehindDefrost.setVisibility(View.VISIBLE);
+            binding.gibSteeringWheel.setVisibility(View.VISIBLE);
+            binding.gibSeatFrontLeft.setVisibility(View.VISIBLE);
+            binding.gibSeatFrontRight.setVisibility(View.VISIBLE);
+            binding.gibSeatRearLeft.setVisibility(View.VISIBLE);
+            binding.gibSeatRearRight.setVisibility(View.VISIBLE);
+        } else {
+            if (gibCycleState == GibCycleState.OUTER) {
+                binding.gibCycle.setVisibility(View.INVISIBLE);
+            }
+            if (gibAcMaxState == GibPlainState.OFF) {
+                binding.gibAcMax.setVisibility(View.INVISIBLE);
+            }
+            if (gibElectricDefrostState == GibPlainState.OFF) {
+                binding.gibElectricDefrost.setVisibility(View.INVISIBLE);
+            }
+            if (gibFrontDefrostState == GibPlainState.OFF) {
+                binding.gibFrontDefrost.setVisibility(View.INVISIBLE);
+            }
+            if (gibBehindDefrostState == GibPlainState.OFF) {
+                binding.gibBehindDefrost.setVisibility(View.INVISIBLE);
+            }
+            if (List.of(GibSteeringWheelState.OFF, GibSteeringWheelState.HEAT0).contains(gibSteeringWheelState)) {
+                binding.gibSteeringWheel.setVisibility(View.INVISIBLE);
+            }
+            if (List.of(GibSeatState.OFF, GibSeatState.COOL0, GibSeatState.HEAT0).contains(gibSeatFLState)) {
+                binding.gibSeatFrontLeft.setVisibility(View.INVISIBLE);
+            }
+            if (List.of(GibSeatState.OFF, GibSeatState.COOL0, GibSeatState.HEAT0).contains(gibSeatFRState)) {
+                binding.gibSeatFrontRight.setVisibility(View.INVISIBLE);
+            }
+            if (List.of(GibSeatState.OFF, GibSeatState.HEAT0).contains(gibSeatRLState)) {
+                binding.gibSeatRearLeft.setVisibility(View.INVISIBLE);
+            }
+            if (List.of(GibSeatState.OFF, GibSeatState.HEAT0).contains(gibSeatRRState)) {
+                binding.gibSeatRearRight.setVisibility(View.INVISIBLE);
+            }
         }
     }
 
@@ -579,7 +739,7 @@ public class WidgetService extends Service {
     }
 
     private void updateWifiStatus() {
-        updateIconStatus(WIFI_ICONS_MONO, WIFI_ICONS_COLOR, WIFI_ICONS_MONOCOLOR, binding.wifiStatusIcon, wifiState.ordinal());
+        updateIconStatus(WIFI_ICONS_MONO, WIFI_ICONS_COLOR, WIFI_ICONS_MONOCOLOR, WIFI_ICONS_MATERIAL, binding.wifiStatusIcon, wifiState.ordinal());
     }
 
     private void setGnssStatus(GnssState newState) {
@@ -588,14 +748,118 @@ public class WidgetService extends Service {
     }
 
     private void updateGnssStatus() {
-        updateIconStatus(GNSS_ICONS_MONO, GNSS_ICONS_COLOR, GNSS_ICONS_MONOCOLOR, binding.gnssStatusIcon, gnssState.ordinal());
+        updateIconStatus(GNSS_ICONS_MONO, GNSS_ICONS_COLOR, GNSS_ICONS_MONOCOLOR, GNSS_ICONS_MATERIAL, binding.gnssStatusIcon, gnssState.ordinal());
     }
 
-    private void updateIconStatus(int[] monoResources, int[] colorResources, int[] monocolorResources, ImageView icon, int state) {
+    protected void setGibCycleStatus(GibCycleState newState) {
+        gibCycleState = newState;
+        updateIconStatus(GIB_ICONS_CYCLE, binding.gibCycle, gibCycleState.ordinal());
+        binding.gibCycle.setVisibility(
+                (gibCycleState != GibCycleState.OUTER || prefs.showGibIndicatorsAlways.get())
+                        ? View.VISIBLE
+                        : View.INVISIBLE
+        );
+    }
+
+    protected void setGibAcMaxStatus(GibPlainState newState) {
+        gibAcMaxState = newState;
+        updateIconStatus(GIB_ICONS_AC_MAX, binding.gibAcMax, gibAcMaxState.ordinal());
+        binding.gibAcMax.setVisibility(
+                (gibAcMaxState != GibPlainState.OFF || prefs.showGibIndicatorsAlways.get())
+                        ? View.VISIBLE
+                        : View.INVISIBLE
+        );
+    }
+
+    protected void setGibElectricDefrostStatus(GibPlainState newState) {
+        gibElectricDefrostState = newState;
+        updateIconStatus(GIB_ICONS_ELECTRIC_DEFROST, binding.gibElectricDefrost, gibElectricDefrostState.ordinal());
+        binding.gibElectricDefrost.setVisibility(
+                (gibElectricDefrostState != GibPlainState.OFF || prefs.showGibIndicatorsAlways.get())
+                        ? View.VISIBLE
+                        : View.INVISIBLE
+        );
+    }
+
+    protected void setGibFrontDefrostStatus(GibPlainState newState) {
+        gibFrontDefrostState = newState;
+        updateIconStatus(GIB_ICONS_FRONT_DEFROST, binding.gibFrontDefrost, gibFrontDefrostState.ordinal());
+        binding.gibFrontDefrost.setVisibility(
+                (gibFrontDefrostState != GibPlainState.OFF || prefs.showGibIndicatorsAlways.get())
+                        ? View.VISIBLE
+                        : View.INVISIBLE
+        );
+    }
+
+    protected void setGibBehindDefrostStatus(GibPlainState newState) {
+        gibBehindDefrostState = newState;
+        updateIconStatus(GIB_ICONS_BEHIND_DEFROST, binding.gibBehindDefrost, gibBehindDefrostState.ordinal());
+        binding.gibBehindDefrost.setVisibility(
+                (gibBehindDefrostState != GibPlainState.OFF || prefs.showGibIndicatorsAlways.get())
+                        ? View.VISIBLE
+                        : View.INVISIBLE
+        );
+    }
+
+    protected void setGibIconsSteeringWheel(GibSteeringWheelState newState) {
+        gibSteeringWheelState = newState;
+        updateIconStatus(GIB_ICONS_STEERING_WHEEL, binding.gibSteeringWheel, gibSteeringWheelState.ordinal());
+        binding.gibSteeringWheel.setVisibility(
+                (gibSteeringWheelState == GibSteeringWheelState.OFF || gibSteeringWheelState == GibSteeringWheelState.HEAT0)
+                        ? (prefs.showGibIndicatorsAlways.get() ? View.VISIBLE : View.INVISIBLE)
+                        : View.VISIBLE
+        );
+    }
+
+    protected void setGibIconsSeatFrontLeft(GibSeatState newState) {
+        gibSeatFLState = newState;
+        updateIconStatus(GIB_ICONS_SEAT_LEFT, binding.gibSeatFrontLeft, gibSeatFLState.ordinal());
+        binding.gibSeatFrontLeft.setVisibility(
+                (gibSeatFLState == GibSeatState.OFF || gibSeatFLState == GibSeatState.COOL0 || gibSeatFLState == GibSeatState.HEAT0)
+                        ? (prefs.showGibIndicatorsAlways.get() ? View.VISIBLE : View.INVISIBLE)
+                        : View.VISIBLE
+        );
+    }
+
+    protected void setGibIconsSeatFrontRight(GibSeatState newState) {
+        gibSeatFRState = newState;
+        updateIconStatus(GIB_ICONS_SEAT_RIGHT, binding.gibSeatFrontRight, gibSeatFRState.ordinal());
+        binding.gibSeatFrontRight.setVisibility(
+                (gibSeatFRState == GibSeatState.OFF || gibSeatFRState == GibSeatState.COOL0 || gibSeatFRState == GibSeatState.HEAT0)
+                        ? (prefs.showGibIndicatorsAlways.get() ? View.VISIBLE : View.INVISIBLE)
+                        : View.VISIBLE
+        );
+    }
+
+    protected void setGibIconsSeatRearLeft(GibSeatState newState) {
+        gibSeatRLState = newState;
+        updateIconStatus(GIB_ICONS_SEAT_LEFT, binding.gibSeatRearLeft, gibSeatRLState.ordinal());
+        binding.gibSeatRearLeft.setVisibility(
+                (gibSeatRLState == GibSeatState.OFF || gibSeatRLState == GibSeatState.COOL0 || gibSeatRLState == GibSeatState.HEAT0)
+                        ? (prefs.showGibIndicatorsAlways.get() ? View.VISIBLE : View.INVISIBLE)
+                        : View.VISIBLE
+        );
+    }
+
+    protected void setGibIconsSeatRearRight(GibSeatState newState) {
+        gibSeatRRState = newState;
+        updateIconStatus(GIB_ICONS_SEAT_RIGHT, binding.gibSeatRearRight, gibSeatRRState.ordinal());
+        binding.gibSeatRearRight.setVisibility(
+                (gibSeatRRState == GibSeatState.OFF || gibSeatRRState == GibSeatState.COOL0 || gibSeatRRState == GibSeatState.HEAT0)
+                        ? (prefs.showGibIndicatorsAlways.get() ? View.VISIBLE : View.INVISIBLE)
+                        : View.VISIBLE
+        );
+    }
+
+    private void updateIconStatus(int[] resources, ImageView icon, int state) {
+            icon.setImageResource(resources[state]);
+    }
+    private void updateIconStatus(int[] monoResources, int[] colorResources, int[] monocolorResources, int[] materialResources, ImageView icon, int state) {
         switch (prefs.iconStyle.get()) {
             case 0 -> icon.setImageResource(monoResources[state]);
             case 1 -> icon.setImageResource(colorResources[state]);
             case 2 -> icon.setImageResource(monocolorResources[state]);
+            case 3 -> icon.setImageResource(materialResources[state]);
         }
     }
 
@@ -645,6 +909,10 @@ public class WidgetService extends Service {
 
         if (connectivityManager != null) {
             connectivityManager.unregisterNetworkCallback(networkCallback);
+        }
+
+        if (gibManager != null) {
+            gibManager.unregister();
         }
     }
 

@@ -1,0 +1,28 @@
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="vector"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:name="cool_1"
+        android:pathData="M 32.024 22.116 C 33.761 25.152 37.667 26.156 40.754 24.358 L 41.311 24.032 L 35.341 13.579 C 35.167 13.276 34.776 13.175 34.467 13.354 C 31.383 15.156 30.29 19.077 32.024 22.116 Z"
+        android:fillColor="?attr/gib_icon_cool"
+        android:strokeWidth="@dimen/gibIconStrokeFillWidth"/>
+    <path
+        android:name="cool_2"
+        android:pathData="M 44.303 33.129 C 46.041 30.091 44.945 26.169 41.86 24.369 L 41.303 24.043 L 35.33 34.496 C 35.159 34.798 35.267 35.19 35.577 35.371 C 38.661 37.172 42.568 36.167 44.303 33.129 Z"
+        android:fillColor="?attr/gib_icon_cool"
+        android:strokeWidth="@dimen/gibIconStrokeFillWidth"/>
+    <path
+        android:name="cool_3"
+        android:pathData="M 47.421 16.619 C 44.041 16.619 41.299 19.64 41.299 23.369 L 41.299 24.043 L 52.932 24.043 C 53.271 24.043 53.543 23.74 53.543 23.369 C 53.543 19.64 50.803 16.619 47.421 16.619 Z"
+        android:fillColor="?attr/gib_icon_disabled"
+        android:strokeWidth="@dimen/gibIconStrokeFillWidth"/>
+    <path
+        android:name="seat_right"
+        android:pathData="M 20.863 24.806 C 23.064 29.341 24.173 31.623 24.189 31.653 C 24.231 31.732 24.231 31.732 24.272 31.809 C 25.255 33.666 25.69 36.6 25.574 40.614 C 25.515 42.672 27.144 44.389 29.211 44.447 C 29.508 44.455 29.806 44.429 30.096 44.368 C 30.604 44.261 31.13 44.147 31.685 44.027 C 32.947 43.754 37.098 42.835 37.822 42.678 C 37.944 42.653 38.062 42.628 38.18 42.603 C 39.884 42.241 41.654 42.341 43.305 42.894 L 45.114 43.498 C 48.968 44.654 50.896 45.322 50.896 45.504 C 50.896 48.313 50.913 50.557 50.997 51.72 C 51.057 52.546 50.201 53 49.132 53 L 19.764 53 C 18.057 52.965 17.018 52.315 16.643 51.05 C 13.031 38.872 10.129 28.29 11.24 21.582 C 11.284 21.313 11.336 21.04 11.395 20.76 C 11.688 19.366 12.149 17.874 12.73 16.343 C 13.103 15.363 13.501 14.426 13.899 13.567 C 14.037 13.268 14.167 13.001 14.282 12.767 L 19.764 12 C 20.014 12.082 20.138 12.142 20.138 12.179 L 20.349 22.379 C 20.353 22.54 20.365 22.702 20.386 22.86 L 20.481 23.55 C 20.541 23.986 20.669 24.41 20.863 24.806 Z"
+        android:strokeColor="?attr/gib_icon_enabled"
+        android:strokeWidth="@dimen/gibIconStrokeWidth"/>
+</vector>

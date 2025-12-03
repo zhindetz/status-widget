@@ -1,0 +1,23 @@
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="vector"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:name="wheel_closed"
+        android:pathData="M 32 14.4 C 26.432 14.4 21.088 16.614 17.15 20.55 C 13.214 24.488 11 29.832 11 35.4 C 11 40.968 13.214 46.312 17.15 50.25 C 21.088 54.186 26.432 56.4 32 56.4 C 37.568 56.4 42.912 54.186 46.85 50.25 C 50.786 46.312 53 40.968 53 35.4 C 53 29.832 50.786 24.488 46.85 20.55 C 42.912 16.614 37.568 14.4 32 14.4 Z"
+        android:strokeColor="?attr/gib_icon_disabled"
+        android:strokeWidth="@dimen/gibIconStrokeWidth"/>
+    <path
+        android:name="wheel_up"
+        android:pathData="M 11 32.34 L 21.5 31.075 C 22.812 26.338 41.188 26.338 42.499 31.075 L 53 32.34"
+        android:strokeColor="?attr/gib_icon_disabled"
+        android:strokeWidth="@dimen/gibIconStrokeWidth"/>
+    <path
+        android:name="wheel_down"
+        android:pathData="M 53 38.119 L 42.636 39.427 C 40.909 43.565 38.751 46.179 36.159 47.269 L 36.158 56.42 M 11 38.119 L 21.328 39.431 C 23.05 43.584 25.201 46.208 27.783 47.3 L 27.782 56.42"
+        android:strokeColor="?attr/gib_icon_disabled"
+        android:strokeWidth="@dimen/gibIconStrokeWidth"/>
+</vector>
