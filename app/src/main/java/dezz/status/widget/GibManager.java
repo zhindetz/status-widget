@@ -4,32 +4,43 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.util.Log;
-import android.widget.Toast;
 
-import androidx.core.content.ContextCompat;
 
 public class GibManager {
     private static final String TAG = "GibManager";
     private static GibManager instance;
     private boolean isListening = false;
     private final Context context;
+    private final Preferences prefs;
+    private final int deviceType;
+
+    private float indoorTemp = 0;
+    private float outdoorTemp = 0;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            GibCommunicationHandler.getInstance().getIntent(context, intent);
+            GibCommunicationHandler.getInstance(context).getIntent(intent);
         }
     };
 
     private GibManager(Context context) {
-        this.context = context.getApplicationContext(); // Сохраняем Application Context
+        this.prefs = Preferences.getInstance(context);
+        this.deviceType = prefs.deviceType.get();
+        this.context = context.getApplicationContext();
         registerReceiver();
     }
 
     public static synchronized GibManager getInstance(Context context) {
         if (instance == null) {
             instance = new GibManager(context);
+            LogsActivity.log(TAG, "GibManager instance created: device type = " + instance.deviceType);
+        } else if (instance.deviceType != instance.prefs.deviceType.get()) {
+            if (instance.isListening()) {
+                instance.unregister();
+                instance = new GibManager(context);
+                LogsActivity.log(TAG, "GibManager instance recreated due to device type change: device type = " + instance.deviceType);
+            }
         }
         if (!instance.isListening()) instance.registerReceiver();
         return instance;
@@ -37,35 +48,65 @@ public class GibManager {
 
     private void registerReceiver() {
         if (!isListening) {
-            Constants.IGibConstants constants = GibCommunicationHandler.getInstance().getConstants();
-            IntentFilter filter = new IntentFilter(Constants.IGibConstants.INTENT_PROPERTY_RESULT_ACTION);
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Constants.IGibConstants.INTENT_ACTION_PROPERTY_CHANGED);
+            filter.addAction(Constants.IGibConstants.INTENT_ACTION_SENSOR_RESULT);
+            filter.addAction(Constants.IGibConstants.INTENT_ACTION_PROPERTY_RESULT);
             try {
                 context.registerReceiver(receiver, filter);
-
                 isListening = true;
-                Log.d(TAG, "BroadcastReceiver успешно зарегистрирован");
-
-                // Отправляем запрос на подписку изменения значений
-                GibCommunicationHandler.getInstance()
-                        .sendIntent(context, GibCommunicationHandler.getInstance().getConstants().getCirculationId())
-                        .sendIntent(context, constants.getAcMaxId())
-                        .sendIntent(context, constants.getElectricDefrostId())
-                        .sendIntent(context, constants.getFrontDefrostId())
-                        .sendIntent(context, constants.getBehindDefrostId())
-                        .sendIntent(context, constants.getSteeringWheelId())
-                        .sendIntent(context, constants.getSeatHeatId(), constants.getSeatAreaFrontLeft())
-                        .sendIntent(context, constants.getSeatCoolId(), constants.getSeatAreaFrontLeft())
-                        .sendIntent(context, constants.getSeatHeatId(), constants.getSeatAreaFrontRight())
-                        .sendIntent(context, constants.getSeatCoolId(), constants.getSeatAreaFrontRight())
-                        .sendIntent(context, constants.getSeatHeatId(), constants.getSeatAreaRearLeft())
-                        .sendIntent(context, constants.getSeatHeatId(), constants.getSeatAreaRearRight());
-                Log.d(TAG, "Запросы на подписку отправлены");
-                // TODO Отправить запрос на текущие состояния ГИБов и обновить иконки
+                LogsActivity.log(TAG, "BroadcastReceiver is registered");
+                sendIntentsToListenGibChanges();
+                sendIntentsToGetCurrentGibProperties();
+                sendIntentsToGetCurrentGibTemperatures();
             } catch (Exception e) {
-                Toast.makeText(context, "Ошибка при регистрации BroadcastReceiver", Toast.LENGTH_LONG).show();
-                Log.e(TAG, "Ошибка при регистрации BroadcastReceiver", e);
+                LogsActivity.log(TAG, "Error registering BroadcastReceiver", e);
             }
         }
+    }
+
+    protected void sendIntentsToGetCurrentGibProperties() {
+        Constants.IGibConstants constants = GibCommunicationHandler.getInstance(context).getDeviceSpecificConstants();
+        GibCommunicationHandler.getInstance(context)
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getCirculationId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getAcMaxId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getElectricDefrostId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getFrontDefrostId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getBehindDefrostId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getSteeringWheelId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaFrontLeft()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getSeatCoolId()).setArea(constants.getSeatAreaFrontLeft()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaFrontRight()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getSeatCoolId()).setArea(constants.getSeatAreaFrontRight()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaRearLeft()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaRearRight()));
+        LogsActivity.log(TAG, "Intents for GIB getting current properties are sent");
+    }
+
+    protected void sendIntentsToGetCurrentGibTemperatures() {
+        Constants.IGibConstants constants = GibCommunicationHandler.getInstance(context).getDeviceSpecificConstants();
+        GibCommunicationHandler.getInstance(context)
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_SENSOR_GET, GibIntentExtra.create().setId(constants.getIndoorTempId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_SENSOR_GET, GibIntentExtra.create().setId(constants.getOutdoorTempId()));
+        LogsActivity.log(TAG, "Intents for GIB getting current temperatures are sent");
+    }
+
+    private void sendIntentsToListenGibChanges() {
+        Constants.IGibConstants constants = GibCommunicationHandler.getInstance(context).getDeviceSpecificConstants();
+        GibCommunicationHandler.getInstance(context)
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getCirculationId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getAcMaxId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getElectricDefrostId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getFrontDefrostId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getBehindDefrostId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getSteeringWheelId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaFrontLeft()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getSeatCoolId()).setArea(constants.getSeatAreaFrontLeft()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaFrontRight()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getSeatCoolId()).setArea(constants.getSeatAreaFrontRight()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaRearLeft()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaRearRight()));
+        LogsActivity.log(TAG, "Intents for GIB listening are sent");
     }
 
     public void unregister() {
@@ -73,15 +114,24 @@ public class GibManager {
             try {
                 context.unregisterReceiver(receiver);
                 isListening = false;
-                Log.d(TAG, "BroadcastReceiver успешно отключен");
+                LogsActivity.log(TAG, "BroadcastReceiver is unregistered");
             } catch (Exception e) {
-                Toast.makeText(context, "Ошибка при отключении от BroadcastReceiver", Toast.LENGTH_LONG).show();
-                Log.e(TAG, "Ошибка при отключении от BroadcastReceiver", e);
+                LogsActivity.log(TAG, "Error unregistering BroadcastReceiver", e);
             }
         }
     }
 
     public boolean isListening() {
         return isListening;
+    }
+
+    public void setIndoorTemp(float indoorTemp) {
+        this.indoorTemp = indoorTemp;
+        WidgetService.getInstance().setGibIndicatorIndoorTemp(indoorTemp);
+    }
+
+    public void setOutdoorTemp(float outdoorTemp) {
+        this.outdoorTemp = outdoorTemp;
+        WidgetService.getInstance().setGibIndicatorOutdoorTemp(outdoorTemp);
     }
 }

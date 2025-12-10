@@ -24,7 +24,7 @@ public class Preferences {
     private static Preferences instance;
     public static synchronized Preferences getInstance(Context context) {
         if (instance == null) {
-            instance = new Preferences(context);
+            instance = new Preferences(context.getApplicationContext());
         }
         return instance;
     }
@@ -96,8 +96,6 @@ public class Preferences {
     public final Bool showWifiIcon = new Bool(this, "showWifiIcon", true);
     public final Bool showGnssIcon = new Bool(this, "showGnssIcon", true);
     public final Bool showFullDayAndMonth = new Bool(this, "showFullDayAndMonth", false);
-    public final Bool showGibIndicators = new Bool(this, "showGibIndicators", false);
-    public final Bool showGibIndicatorsAlways = new Bool(this, "showGibIndicatorsAlways", true);
     public final Bool oneLineLayout = new Bool(this, "oneLineLayout", false);
     public final Int iconSize = new Int(this, "iconSize", 70);
     public final Int timeFontSize = new Int(this, "timeFontSize", 60);
@@ -107,9 +105,14 @@ public class Preferences {
     public final Int spacingBetweenTextsAndIcons = new Int(this, "spacingBetweenTextsAndIcons", 0);
     public final Int adjustTimeY = new Int(this, "adjustTimeY", 0);
     public final Int adjustDateY = new Int(this, "adjustDateY", 0);
-    public final Int adjustGibIndicatorsY = new Int(this, "adjustGibIndicatorsY", 0);
     public final Int overlayX = new Int(this, "overlayX", 200);
     public final Int overlayY = new Int(this, "overlayY", 300);
+
+
+    public final Int deviceType = new Int(this, "deviceType", Constants.DEVICE_TYPE_DEFAULT);
+    public final Bool showGibIndicators = new Bool(this, "showGibIndicators", false);
+    public final Bool showGibIndicatorsAlways = new Bool(this, "showGibIndicatorsAlways", true);
+    public final Int adjustGibIndicatorsY = new Int(this, "adjustGibIndicatorsY", 0);
 
     public Preferences(Context context) {
         final Context deviceContext = context.getApplicationContext().createDeviceProtectedStorageContext();

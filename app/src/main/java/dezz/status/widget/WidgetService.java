@@ -42,7 +42,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.provider.Settings;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -190,7 +189,9 @@ public class WidgetService extends Service {
     private static final int NOTIFICATION_ID = 1001;
     private static final String CHANNEL_ID = "WidgetServiceChannel";
     private static final long GNSS_STATUS_CHECK_INTERVAL = 1000;
-    private static final long TWILIGHT_CHECK_INTERVAL = 10000;
+    private static final long TWILIGHT_CALC_INTERVAL = 10000;
+    private static final long GIB_REFRESH_CHECK_INTERVAL = 120000;
+    private static final long GIB_TEMPERATURE_CHECK_INTERVAL = 15000;
 
     private static WidgetService instance;
 
@@ -209,6 +210,8 @@ public class WidgetService extends Service {
     private float initialTouchY;
     private GnssState gnssState = GnssState.OFF;
     private WiFiState wifiState = WiFiState.OFF;
+
+    // TODO Перенести состояния ГИБ в GibManager
     private GibCycleState gibCycleState = GibCycleState.OUTER;
     private GibPlainState gibAcMaxState = GibPlainState.OFF;
     private GibPlainState gibElectricDefrostState = GibPlainState.OFF;
@@ -242,7 +245,7 @@ public class WidgetService extends Service {
     private final Runnable updateGnssStatusRunnable = new Runnable() {
         @Override
         public void run() {
-            Log.d(TAG, "Interval check of GNSS relevance (if it is outdated)");
+//            LogActivity.log(TAG, "Interval check of GNSS relevance (if it is outdated)");
             if (System.currentTimeMillis() - lastLocationUpdateTime > 10000) {
                 setGnssStatus(GnssState.OFF);
             } else if (System.currentTimeMillis() - lastLocationUpdateTime > 5000) {
@@ -256,33 +259,33 @@ public class WidgetService extends Service {
     private final Runnable updateDayNightModeRunnable = new Runnable() {
         @Override
         public void run() {
-            Log.d(TAG, "Interval check of day/night mode");
+            LogsActivity.log(TAG, "Interval check of day/night mode");
             int initialNightMode = prefs.savedNightMode.get();
             saveNightModePrefBasedOnDaytimeAtCurrentLocation(); // Update night mode periodically
             if (initialNightMode != prefs.savedNightMode.get()) {
                 updateOverlay(); // Update the overlay if night mode has changed
             }
 
-            mainHandler.postDelayed(this, TWILIGHT_CHECK_INTERVAL);
+            mainHandler.postDelayed(this, TWILIGHT_CALC_INTERVAL);
         }
     };
 
     private final GnssStatus.Callback gnssStatusCallback = new GnssStatus.Callback() {
         @Override
         public void onStarted() {
-            Log.d(TAG, "GNSS is started");
+            LogsActivity.log(TAG, "GNSS is started");
             setGnssStatus(GnssState.BAD);
         }
 
         @Override
         public void onStopped() {
-            Log.d(TAG, "GNSS is stopped");
+            LogsActivity.log(TAG, "GNSS is stopped");
             setGnssStatus(GnssState.OFF);
         }
 
         @Override
         public void onFirstFix(int ttffMillis) {
-            Log.d(TAG, "GNSS has first fix");
+            LogsActivity.log(TAG, "GNSS has first fix");
             setGnssStatus(GnssState.BAD);
         }
     };
@@ -290,7 +293,7 @@ public class WidgetService extends Service {
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(@NonNull Location location) {
-            Log.d(TAG, "Location changed: " + location);
+//            LogActivity.log(TAG, "Location changed: " + location);
             lastLocationUpdateTime = System.currentTimeMillis();
             if (location.hasAccuracy() && location.getAccuracy() < 20.0) {
                 setGnssStatus(GnssState.GOOD);
@@ -301,19 +304,19 @@ public class WidgetService extends Service {
 
         @Override
         public void onProviderEnabled(@NonNull String provider) {
-            Log.d(TAG, "Provider enabled: " + provider);
+            LogsActivity.log(TAG, "Provider enabled: " + provider);
         }
 
         @Override
         public void onProviderDisabled(@NonNull String provider) {
-            Log.d(TAG, "Provider disabled: " + provider);
+            LogsActivity.log(TAG, "Provider disabled: " + provider);
         }
     };
 
     private final ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
         @Override
         public void onAvailable(@NonNull Network network) {
-            Log.d(TAG, "Wi-Fi is connected");
+            LogsActivity.log(TAG, "Wi-Fi is connected");
             if (wifiState == WiFiState.OFF) {
                 setWifiStatus(WiFiState.NO_INTERNET);
             }
@@ -321,7 +324,7 @@ public class WidgetService extends Service {
 
         @Override
         public void onLost(@NonNull Network network) {
-            Log.d(TAG, "Wi-Fi is lost");
+            LogsActivity.log(TAG, "Wi-Fi is lost");
             setWifiStatus(WiFiState.OFF);
         }
 
@@ -329,7 +332,7 @@ public class WidgetService extends Service {
         public void onCapabilitiesChanged(@NonNull Network network, NetworkCapabilities networkCapabilities) {
             if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
                 boolean hasInternet = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-                Log.d(TAG, "Wi-Fi capabilities changed, has internet = " + hasInternet);
+                LogsActivity.log(TAG, "Wi-Fi capabilities changed, has internet = " + hasInternet);
                 setWifiStatus(hasInternet ? WiFiState.INTERNET : WiFiState.NO_INTERNET);
             } else {
                 setWifiStatus(WiFiState.OFF);
@@ -337,9 +340,29 @@ public class WidgetService extends Service {
         }
     };
 
+    private final Runnable updatePropertiesFromGibRunnable = new Runnable() {
+        @Override
+        public void run() {
+            LogsActivity.log(TAG, "Interval check of properties from GIB");
+            GibManager.getInstance(getBaseContext()).sendIntentsToGetCurrentGibProperties();
+
+            mainHandler.postDelayed(this, GIB_REFRESH_CHECK_INTERVAL);
+        }
+    };
+
+    private final Runnable updateTemperaturesFromGibRunnable = new Runnable() {
+        @Override
+        public void run() {
+            LogsActivity.log(TAG, "Interval check of temperatures from GIB");
+            GibManager.getInstance(getBaseContext()).sendIntentsToGetCurrentGibTemperatures();
+
+            mainHandler.postDelayed(this, GIB_TEMPERATURE_CHECK_INTERVAL);
+        }
+    };
+
     @Override
     public void onCreate() {
-        prefs = Preferences.getInstance(this.getApplicationContext());
+        prefs = Preferences.getInstance(this);
         if (!Permissions.allPermissionsGranted(this)) {
             prefs.widgetEnabled.set(false);
             Toast.makeText(this, R.string.permissions_required, Toast.LENGTH_LONG).show();
@@ -360,8 +383,8 @@ public class WidgetService extends Service {
 
     private void createOverlayView() {
         // Create the overlay view
-        Log.d(TAG, "Creating overlay view");
-        themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this.getApplicationContext()));
+        LogsActivity.log(TAG, "Creating overlay view");
+        themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this));
 
         LayoutInflater layoutInflater = LayoutInflater.from(themedContext);
 
@@ -398,7 +421,7 @@ public class WidgetService extends Service {
         try {
             windowManager.addView(binding.getRoot(), params);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to add view to window manager", e);
+            LogsActivity.log(TAG, "Failed to add view to window manager", e);
             Toast.makeText(this, R.string.overlay_permission_required, Toast.LENGTH_LONG).show();
             stopSelf();
         }
@@ -407,12 +430,12 @@ public class WidgetService extends Service {
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        Log.d(TAG, "Configuration changed");
+        LogsActivity.log(TAG, "Configuration changed");
         updateOverlay();
     }
 
     protected void updateOverlay() {
-        Log.d(TAG, "Updating overlay view");
+        LogsActivity.log(TAG, "Updating overlay view");
         if (binding != null) {
             windowManager.removeView(binding.getRoot());
             createOverlayView();
@@ -505,7 +528,7 @@ public class WidgetService extends Service {
 
         if (prefs.showGnssIcon.get() || prefs.nightModeSpinnerOption.get() == 3) { // Settings related to locationManager
 
-            Log.d(TAG, "Location settings are triggered");
+            LogsActivity.log(TAG, "Location settings are triggered");
             if (locationManager == null) { // Setup locationManager
                 locationManager = getSystemService(LocationManager.class);
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener, Looper.getMainLooper());
@@ -518,21 +541,21 @@ public class WidgetService extends Service {
                 }
             } else { // Do not monitor GNSS status, but still monitor location updates for day/night mode
                 if (locationManager != null) {
-                    Log.d(TAG, "Removing location updates and GNSS status callback");
+                    LogsActivity.log(TAG, "Removing location updates and GNSS status callback");
                     mainHandler.removeCallbacks(updateGnssStatusRunnable);
                     locationManager.unregisterGnssStatusCallback(gnssStatusCallback);
                 }
             }
             if (prefs.nightModeSpinnerOption.get() == 3) { // Monitor day/nighttime at current location
                 if (!mainHandler.hasCallbacks(updateDayNightModeRunnable)) {
-                    mainHandler.postDelayed(updateDayNightModeRunnable, TWILIGHT_CHECK_INTERVAL);
+                    mainHandler.postDelayed(updateDayNightModeRunnable, TWILIGHT_CALC_INTERVAL);
                 }
             } else { // Do not monitor day/nighttime but still monitor location updates for GNSS status
-                Log.d(TAG, "Removing day/night mode update");
+                LogsActivity.log(TAG, "Removing day/night mode update");
                 mainHandler.removeCallbacks(updateDayNightModeRunnable);
             }
         } else if (locationManager != null) { // locationManager is not needed anymore
-            Log.d(TAG, "Removing all location callbacks");
+            LogsActivity.log(TAG, "Removing all location callbacks");
             mainHandler.removeCallbacks(updateDayNightModeRunnable);
             mainHandler.removeCallbacks(updateGnssStatusRunnable);
             locationManager.removeUpdates(locationListener);
@@ -540,7 +563,7 @@ public class WidgetService extends Service {
             locationManager = null;
         }
 
-        if (prefs.showGibIndicators.get()) {
+        if (prefs.showGibIndicators.get() && prefs.deviceType.get() != Constants.DEVICE_TYPE_DEFAULT) {
             if (gibManager == null) {
                 gibManager = GibManager.getInstance(this);
             }
@@ -554,11 +577,20 @@ public class WidgetService extends Service {
             binding.gibSeatFrontRight.setLayoutParams(iconParams);
             binding.gibSeatRearLeft.setLayoutParams(iconParams);
             binding.gibSeatRearRight.setLayoutParams(iconParams);
-            Log.d(TAG, "GIB индикаторы включены");
+            if (!mainHandler.hasCallbacks(updatePropertiesFromGibRunnable)) {
+                mainHandler.postDelayed(updatePropertiesFromGibRunnable, GIB_REFRESH_CHECK_INTERVAL);
+            }
+            if (!mainHandler.hasCallbacks(updateTemperaturesFromGibRunnable)) {
+                mainHandler.postDelayed(updateTemperaturesFromGibRunnable, GIB_TEMPERATURE_CHECK_INTERVAL);
+            }
+
+            LogsActivity.log(TAG, "GIB indicators are turned ON");
         } else if (gibManager != null) {
+            mainHandler.removeCallbacks(updatePropertiesFromGibRunnable);
+            mainHandler.removeCallbacks(updateTemperaturesFromGibRunnable);
             gibManager.unregister();
             gibManager = null;
-            Log.d(TAG, "GIB индикаторы выключены");
+            LogsActivity.log(TAG, "GIB indicators are turned OFF");
         }
 
         if (prefs.showGibIndicatorsAlways.get()) {
@@ -610,7 +642,7 @@ public class WidgetService extends Service {
     // and Runnable for interval check.
     @SuppressLint("MissingPermission")
     protected void saveNightModePrefBasedOnDaytimeAtCurrentLocation() {
-        Log.d(TAG, "Setting night mode based on sunrise/sunset");
+        LogsActivity.log(TAG, "Setting night mode based on sunrise/sunset");
         if (locationManager == null) {
             locationManager = getSystemService(LocationManager.class);
         }
@@ -622,14 +654,14 @@ public class WidgetService extends Service {
         }
 
         if (lastKnownLocation != null) {
-            Log.d(TAG, "Last known location: " + lastKnownLocation);
+            LogsActivity.log(TAG, "Last known location: " + lastKnownLocation);
             prefs.savedNightMode.set(
                     Helpers.isNightNow(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude())
                             ? AppCompatDelegate.MODE_NIGHT_YES
                             : AppCompatDelegate.MODE_NIGHT_NO
             );
         } else if (prefs.savedNightMode.get() == -1) {
-            Log.d(TAG, "No location available, defaulting to follow system");
+            LogsActivity.log(TAG, "No location available, defaulting to follow system");
             prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         }
     }
@@ -849,6 +881,14 @@ public class WidgetService extends Service {
                         ? (prefs.showGibIndicatorsAlways.get() ? View.VISIBLE : View.INVISIBLE)
                         : View.VISIBLE
         );
+    }
+
+    protected void setGibIndicatorIndoorTemp(float value) {
+        binding.gibIndoorTemp.setText(String.format(Locale.getDefault(), "%.1f°", value));
+    }
+
+    protected void setGibIndicatorOutdoorTemp(float value) {
+        binding.gibOutdoorTemp.setText(String.format(Locale.getDefault(), "%.1f°", value));
     }
 
     private void updateIconStatus(int[] resources, ImageView icon, int state) {

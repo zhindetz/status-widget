@@ -43,9 +43,9 @@
         android:layout_height="0sp"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:scrollbars="vertical"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbarSize="@dimen/optionsScrollbarSize"
-        android:scrollbarAlwaysDrawVerticalTrack="true">
+        android:scrollbars="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -78,30 +78,32 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="@dimen/optionsMarginSmall"
+                    android:minHeight="@dimen/optionsLineHeight"
                     android:text="@string/enable_widget"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
+                    android:textSize="@dimen/optionsTextSizeLabel" />
 
                 <!-- Icon style -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:minHeight="@dimen/optionsLineHeight"
                         android:text="@string/icon_style"
                         android:textColor="?attr/text_primary"
-                        android:textSize="@dimen/optionsTextSizeLabel"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:textSize="@dimen/optionsTextSizeLabel" />
+
                     <androidx.appcompat.widget.AppCompatSpinner
                         android:id="@+id/iconStyleSpinner"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:textColor="?attr/text_primary" />
                 </LinearLayout>
 
                 <!-- Night Mode -->
@@ -109,20 +111,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:minHeight="@dimen/optionsLineHeight"
                         android:text="@string/night_mode"
                         android:textColor="?attr/text_primary"
-                        android:textSize="@dimen/optionsTextSizeLabel"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:textSize="@dimen/optionsTextSizeLabel" />
+
                     <androidx.appcompat.widget.AppCompatSpinner
                         android:id="@+id/themeSpinner"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:textColor="?attr/text_primary" />
                 </LinearLayout>
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -130,60 +134,62 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="@dimen/optionsMarginSmall"
+                    android:minHeight="@dimen/optionsLineHeight"
                     android:text="@string/show_time"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
+                    android:textSize="@dimen/optionsTextSizeLabel" />
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/showDateSwitch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="@dimen/optionsMarginSmall"
+                    android:minHeight="@dimen/optionsLineHeight"
                     android:text="@string/show_date"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
+                    android:textSize="@dimen/optionsTextSizeLabel" />
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/showDaySwitch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="@dimen/optionsMarginSmall"
+                    android:minHeight="@dimen/optionsLineHeight"
                     android:text="@string/show_day_of_the_week"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
+                    android:textSize="@dimen/optionsTextSizeLabel" />
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/showFullDayAndMonthSwitch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="@dimen/optionsMarginSmall"
+                    android:minHeight="@dimen/optionsLineHeight"
                     android:text="@string/show_full_day_and_month"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
+                    android:textSize="@dimen/optionsTextSizeLabel" />
 
                 <!-- Calendar Alignment -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:minHeight="@dimen/optionsLineHeight"
                         android:text="@string/calendar_alignment"
                         android:textColor="?attr/text_primary"
-                        android:textSize="@dimen/optionsTextSizeLabel"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:textSize="@dimen/optionsTextSizeLabel" />
+
                     <androidx.appcompat.widget.AppCompatSpinner
                         android:id="@+id/calendarAlignmentSpinner"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:textColor="?attr/text_primary" />
                 </LinearLayout>
 
                 <androidx.appcompat.widget.SwitchCompat
@@ -191,40 +197,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="@dimen/optionsMarginSmall"
+                    android:minHeight="@dimen/optionsLineHeight"
                     android:text="@string/show_wifi"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
+                    android:textSize="@dimen/optionsTextSizeLabel" />
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/showGnssSwitch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="@dimen/optionsMarginSmall"
+                    android:minHeight="@dimen/optionsLineHeight"
                     android:text="@string/show_gnss"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/showGibSwitch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="@dimen/optionsMarginSmall"
-                    android:text="@string/show_gib_indicators"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/showGibAlwaysSwitch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="@dimen/optionsMarginSmall"
-                    android:text="@string/show_gib_indicators_always"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
+                    android:textSize="@dimen/optionsTextSizeLabel" />
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/oneLineLayoutSwitch"
@@ -232,10 +218,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/optionsMarginSmall"
                     android:layout_marginBottom="@dimen/optionsMarginBig"
+                    android:minHeight="@dimen/optionsLineHeight"
                     android:text="@string/one_line_layout"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
+                    android:textSize="@dimen/optionsTextSizeLabel" />
 
                 <!-- Time Font Size -->
                 <TextView
@@ -254,13 +240,13 @@
                         android:id="@+id/timeFontSizeSeekBar"
                         android:layout_width="0sp"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginEnd="@dimen/optionsMarginSmall"
                         android:layout_weight="1"
-                        android:layout_gravity="center_vertical"
                         android:max="500"
                         android:min="10"
-                        android:progress="50"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:progress="50" />
 
                     <TextView
                         android:id="@+id/timeFontSizeValueText"
@@ -289,13 +275,13 @@
                         android:id="@+id/dateFontSizeSeekBar"
                         android:layout_width="0sp"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginEnd="@dimen/optionsMarginSmall"
                         android:layout_weight="1"
-                        android:layout_gravity="center_vertical"
                         android:max="500"
                         android:min="10"
-                        android:progress="50"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:progress="50" />
 
                     <TextView
                         android:id="@+id/dateFontSizeValueText"
@@ -311,10 +297,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/optionsMarginBig"
+                    android:minHeight="@dimen/optionsLineHeight"
                     android:text="@string/icon_size"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel"
-                    android:minHeight="@dimen/optionsLineHeight" />
+                    android:textSize="@dimen/optionsTextSizeLabel" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -325,13 +311,13 @@
                         android:id="@+id/iconSizeSeekBar"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginEnd="@dimen/optionsMarginSmall"
                         android:layout_weight="1"
-                        android:layout_gravity="center_vertical"
                         android:max="600"
                         android:min="10"
-                        android:progress="50"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:progress="50" />
 
                     <TextView
                         android:id="@+id/iconSizeValueText"
@@ -360,13 +346,13 @@
                         android:id="@+id/spacingBetweenTextsAndIconsSeekBar"
                         android:layout_width="0sp"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginEnd="@dimen/optionsMarginSmall"
                         android:layout_weight="1"
-                        android:layout_gravity="center_vertical"
                         android:max="150"
                         android:min="0"
-                        android:progress="50"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:progress="50" />
 
                     <TextView
                         android:id="@+id/spacingBetweenTextsAndIconsValueText"
@@ -395,13 +381,13 @@
                         android:id="@+id/textOutlineAlphaSeekBar"
                         android:layout_width="0sp"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginEnd="@dimen/optionsMarginSmall"
                         android:layout_weight="1"
-                        android:layout_gravity="center_vertical"
                         android:max="255"
                         android:min="0"
-                        android:progress="0xAA"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:progress="0xAA" />
 
                     <TextView
                         android:id="@+id/textOutlineAlphaValueText"
@@ -430,13 +416,13 @@
                         android:id="@+id/backgroundAlphaSeekBar"
                         android:layout_width="0sp"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginEnd="@dimen/optionsMarginSmall"
                         android:layout_weight="1"
-                        android:layout_gravity="center_vertical"
                         android:max="255"
                         android:min="0"
-                        android:progress="0xAA"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:progress="0xAA" />
 
                     <TextView
                         android:id="@+id/backgroundAlphaValueText"
@@ -465,13 +451,13 @@
                         android:id="@+id/adjustTimeYSeekBar"
                         android:layout_width="0sp"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginEnd="@dimen/optionsMarginSmall"
                         android:layout_weight="1"
-                        android:layout_gravity="center_vertical"
                         android:max="100"
                         android:min="-100"
-                        android:progress="0"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:progress="0" />
 
                     <TextView
                         android:id="@+id/adjustTimeYValueText"
@@ -500,13 +486,13 @@
                         android:id="@+id/adjustDateYSeekBar"
                         android:layout_width="0sp"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginEnd="@dimen/optionsMarginSmall"
                         android:layout_weight="1"
-                        android:layout_gravity="center_vertical"
                         android:max="100"
                         android:min="-100"
-                        android:progress="0"
-                        android:minHeight="@dimen/optionsLineHeight" />
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:progress="0" />
 
                     <TextView
                         android:id="@+id/adjustDateYValueText"
@@ -518,43 +504,130 @@
                         android:textSize="@dimen/optionsTextSizeLabel" />
                 </LinearLayout>
 
-                <!-- Adjust GIB Indicators Y -->
+            </LinearLayout><!-- Widget Configuration END -->
+
+
+            <!-- Extra Configuration -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/optionsMarginMedium"
+                android:background="?attr/card_background"
+                android:elevation="@dimen/optionsElevation"
+                android:orientation="vertical"
+                android:padding="@dimen/optionsMargin">
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/adjust_gibindicators_y"
+                    android:layout_marginBottom="@dimen/optionsMarginSmall"
+                    android:text="@string/extra_configuration_title"
                     android:textColor="?attr/text_primary"
-                    android:textSize="@dimen/optionsTextSizeLabel" />
+                    android:textSize="@dimen/optionsTextSizeBlock"
+                    android:textStyle="bold" />
 
+                <!-- Device Dropdown -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <SeekBar
-                        android:id="@+id/adjustGibIndicatorsYSeekBar"
-                        android:layout_width="0sp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/optionsMarginSmall"
-                        android:layout_weight="1"
-                        android:layout_gravity="center_vertical"
-                        android:max="100"
-                        android:min="-100"
-                        android:progress="0"
-                        android:minHeight="@dimen/optionsLineHeight" />
-
                     <TextView
-                        android:id="@+id/adjustGibIndicatorsYValueText"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:text="@string/size_value_format"
+                        android:layout_weight="1"
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:text="@string/device_dropdown"
                         android:textColor="?attr/text_primary"
                         android:textSize="@dimen/optionsTextSizeLabel" />
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
 
+                    <androidx.appcompat.widget.AppCompatSpinner
+                        android:id="@+id/deviceSpinner"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:textColor="?attr/text_primary" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/gibOptions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone" >
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/showGibSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/optionsMarginSmall"
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:text="@string/show_gib_indicators"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="@dimen/optionsTextSizeLabel" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/showGibAlwaysSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/optionsMarginSmall"
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:text="@string/show_gib_indicators_always"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="@dimen/optionsTextSizeLabel" />
+
+                    <!-- Adjust GIB Indicators Y -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/adjust_gibindicators_y"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="@dimen/optionsTextSizeLabel" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <SeekBar
+                            android:id="@+id/adjustGibIndicatorsYSeekBar"
+                            android:layout_width="0sp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginEnd="@dimen/optionsMarginSmall"
+                            android:layout_weight="1"
+                            android:max="100"
+                            android:min="-100"
+                            android:minHeight="@dimen/optionsLineHeight"
+                            android:progress="0" />
+
+                        <TextView
+                            android:id="@+id/adjustGibIndicatorsYValueText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:text="@string/size_value_format"
+                            android:textColor="?attr/text_primary"
+                            android:textSize="@dimen/optionsTextSizeLabel" />
+                    </LinearLayout>
+                </LinearLayout>
+
+
+            </LinearLayout> <!-- Extra configuration END -->
+
+
+            <!-- Button to open Activity with Logs -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/openLogsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="@dimen/optionsMarginMedium"
+                android:text="@string/show_logs"
+                android:textColor="?attr/text_primary"
+                android:textSize="@dimen/optionsTextSizeLabel" />
+
+        </LinearLayout>
 
 
     </ScrollView>

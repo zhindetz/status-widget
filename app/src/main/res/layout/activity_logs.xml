@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/main_background"
+    android:orientation="vertical">
+
+    <!-- Header -->
+    <TextView
+        android:id="@+id/headerText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/optionsMargin"
+        android:background="?attr/header_background"
+        android:gravity="start"
+        android:paddingHorizontal="@dimen/optionsPaddingHorizontal"
+        android:paddingVertical="@dimen/optionsPaddingVertical"
+        android:text="@string/log_header"
+        android:textColor="?attr/text_primary"
+        android:textSize="@dimen/optionsTextSizeHeader"
+        android:textStyle="bold" />
+    <ScrollView
+        android:id="@+id/logsScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/optionsMargin"
+        android:background="?attr/card_background"
+        android:elevation="@dimen/optionsElevation"
+        android:padding="@dimen/optionsMargin">
+
+        <TextView
+            android:id="@+id/logsTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/optionsTextSizeLabel"
+            android:textColor="?attr/text_primary"
+            android:fontFamily="monospace"
+            android:scrollbars="vertical" />
+    </ScrollView>
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/optionsMarginSmall"
+        android:padding="@dimen/optionsMarginSmall"
+        android:gravity="center">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/clearLogsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/clear_logs"
+            android:textSize="@dimen/optionsTextSizeLabel"
+            android:paddingHorizontal="16dp"
+            android:layout_marginEnd="8dp"
+            android:background="?attr/selectableItemBackground"
+            android:textColor="?attr/text_primary"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/hideLogsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/hide_logs"
+            android:textSize="@dimen/optionsTextSizeLabel"
+            android:paddingHorizontal="16dp"
+            android:background="?attr/selectableItemBackground"
+            android:textColor="?attr/text_primary" />
+    </LinearLayout>
+
+</LinearLayout>

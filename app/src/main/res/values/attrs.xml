@@ -10,8 +10,27 @@
     <attr name="text_secondary" format="color" />
     <attr name="text_outline" format="color" />
 
+    <attr name="optionsTextSizeHeader" format="dimension" />
+    <attr name="optionsTextSizeBlock" format="dimension" />
+    <attr name="optionsTextSizeLabel" format="dimension" />
+    <attr name="optionsTextSizeFooter" format="dimension" />
+    <attr name="optionsPaddingHorizontal" format="dimension" />
+    <attr name="optionsPaddingVertical" format="dimension" />
+    <attr name="optionsMarginBig" format="dimension" />
+    <attr name="optionsMargin" format="dimension" />
+    <attr name="optionsMarginMedium" format="dimension" />
+    <attr name="optionsMarginSmall" format="dimension" />
+    <attr name="optionsScrollbarSize" format="dimension" />
+    <attr name="optionsLineHeight" format="dimension" />
+    <attr name="optionsElevation" format="dimension" />
+
     <attr name="gib_icon_disabled" format="color" />
     <attr name="gib_icon_enabled" format="color" />
     <attr name="gib_icon_heat" format="color" />
     <attr name="gib_icon_cool" format="color" />
+
+    <attr name="gibIconStrokeWidth" format="dimension" />
+    <attr name="gibIconStrokeFillWidth" format="dimension" />
+    <attr name="gibIconBackStrokeWidth" format="dimension" />
+    <attr name="gibIconBackStrokeFillWidth" format="dimension" />
 </resources>

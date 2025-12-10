@@ -68,4 +68,17 @@
     <string name="missing_permissions_toast">Некоторые разрешения не предоставлены. Приложение может работать некорректно.</string>
     <string name="notification_channel_title">Служба виджета статуса</string>
     <string name="notification_content">Служба виджета запущена</string>
+
+
+    <string name="extra_configuration_title">Спец.настройки в зависимости от устройства</string>
+    <string name="device_dropdown">Выбрать тип устройства для активации дополнительных опций</string>
+    <string-array name="device_types">
+        <item>Обычное</item>
+        <item>Atlas</item>
+    </string-array>
+
+    <string name="show_logs">Показать логи</string>
+    <string name="hide_logs">Скрыть логи</string>
+    <string name="clear_logs">Очистить</string>
+    <string name="log_header">Логи приложения</string>
 </resources>

@@ -2,14 +2,20 @@ package dezz.status.widget;
 
 public class Constants {
 
+    public static final int DEVICE_TYPE_DEFAULT = 0;
+    public static final int DEVICE_TYPE_ATLAS = 1;
+
     public interface IGibConstants {
 
         // Общие константы
         public static String PACKAGE_NAME = "com.salat.gbinder";
-        public static String INTENT_PROPERTY_REQUEST_ACTION = "com.salat.gbinder.LISTEN_PROPERTY_CHANGES";
-        public static String INTENT_PROPERTY_RESULT_ACTION = "com.salat.gbinder.PROPERTY_VALUE_CHANGED";
-        public static String INTENT_SENSOR_REQUEST_ACTION = "com.salat.gbinder.GET_FLOAT_SENSOR";
-        public static String INTENT_SENSOR_RESULT_ACTION = "com.salat.gbinder.SENSOR_FLOAT_CHANGED";
+        public static String INTENT_ACTION_PROPERTY_LISTEN = "com.salat.gbinder.LISTEN_PROPERTY_CHANGES"; // request
+        public static String INTENT_ACTION_PROPERTY_CHANGED = "com.salat.gbinder.PROPERTY_VALUE_CHANGED"; // response
+        public static String INTENT_ACTION_SENSOR_GET = "com.salat.gbinder.GET_FLOAT_SENSOR"; // request
+        public static String INTENT_ACTION_SENSOR_RESULT = "com.salat.gbinder.SENSOR_FLOAT_RESULT"; // response
+        public static String INTENT_ACTION_PROPERTY_GET = "com.salat.gbinder.GET_INT_PROPERTY"; // request
+        public static String INTENT_ACTION_PROPERTY_RESULT = "com.salat.gbinder.PROPERTY_VALUE_RESULT"; // response
+        public static String INTENT_ACTION_PROPERTY_SET = "com.salat.gbinder.SET_INT_PROPERTY"; // request
 
         int VALUE_OFF = 0;
         int VALUE_ON = 1;

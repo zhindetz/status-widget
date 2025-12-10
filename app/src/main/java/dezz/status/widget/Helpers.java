@@ -98,4 +98,54 @@ public class Helpers {
         }
         throw new IllegalArgumentException("Was not able to resolve attribute with ID: " + attr);
     }
+
+
+
+    public static float parseAsFloat(Object obj, float defaultValue) {
+        if (obj == null) {
+            return defaultValue;
+        } else if (obj instanceof String s && !s.isEmpty()) {
+            try {
+                return Float.parseFloat(s);
+            } catch (NumberFormatException e) {
+                LogsActivity.log(TAG, "Cannot parse as float: " + s, e);
+                return defaultValue;
+            }
+        } else if (obj instanceof Float f) {
+            return f;
+        } else if (obj instanceof Double d) {
+            return d.floatValue();
+        } else if (obj instanceof Integer i) {
+            return i.floatValue();
+        } else if (obj instanceof Long l) {
+            return l.floatValue();
+        } else {
+            LogsActivity.log(TAG, "Unsupported type: " + obj.getClass().getSimpleName());
+            return defaultValue;
+        }
+    }
+
+    public static int parseAsInt(Object obj, int defaultValue) {
+        if (obj == null) {
+            return defaultValue;
+        } else if (obj instanceof String s && !s.isEmpty()) {
+            try {
+                return Integer.parseInt(s);
+            } catch (NumberFormatException e) {
+                LogsActivity.log(TAG, "Cannot parse as int: " + s, e);
+                return defaultValue;
+            }
+        } else if (obj instanceof Integer i) {
+            return i;
+        } else if (obj instanceof Double d) {
+            return d.intValue();
+        } else if (obj instanceof Float f) {
+            return f.intValue();
+        } else if (obj instanceof Long l) {
+            return l.intValue();
+        } else {
+            LogsActivity.log(TAG, "Unsupported type: " + obj.getClass().getSimpleName());
+            return defaultValue;
+        }
+    }
 }

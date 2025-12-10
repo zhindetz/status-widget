@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Instead of AppCompatDelegate.setDefaultNightMode() select theme manually.
         // Context should be wrapped with ContextThemeWrapper for ?attr to work.
-        themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this.getApplicationContext()));
+        themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this));
         binding = ActivityMainBinding.inflate(LayoutInflater.from(themedContext));
         setContentView(binding.getRoot());
 
@@ -189,8 +189,6 @@ public class MainActivity extends AppCompatActivity {
         binder.bindCheckbox(binding.showDaySwitch, prefs.showDayOfTheWeek);
         binder.bindCheckbox(binding.showWiFiSwitch, prefs.showWifiIcon);
         binder.bindCheckbox(binding.showGnssSwitch, prefs.showGnssIcon);
-        binder.bindCheckbox(binding.showGibSwitch, prefs.showGibIndicators);
-        binder.bindCheckbox(binding.showGibAlwaysSwitch, prefs.showGibIndicatorsAlways);
         binder.bindCheckbox(binding.showFullDayAndMonthSwitch, prefs.showFullDayAndMonth);
         binder.bindCheckbox(binding.oneLineLayoutSwitch, prefs.oneLineLayout);
 
@@ -202,7 +200,53 @@ public class MainActivity extends AppCompatActivity {
         binder.bindColorComponentSeekbar(binding.backgroundAlphaSeekBar, binding.backgroundAlphaValueText, prefs.backgroundAlpha);
         binder.bindOffsetSeekbar(binding.adjustTimeYSeekBar, binding.adjustTimeYValueText, prefs.adjustTimeY);
         binder.bindOffsetSeekbar(binding.adjustDateYSeekBar, binding.adjustDateYValueText, prefs.adjustDateY);
+
+
+        // Device type dropdown (for extra options)
+        ArrayAdapter<String> deviceSpinnerAdapter = new ArrayAdapter<>(
+                themedContext,
+                R.layout.spinner_dropdown_item,
+                getResources().getStringArray(R.array.device_types)
+        );
+        deviceSpinnerAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        binding.deviceSpinner.setAdapter(deviceSpinnerAdapter);
+        binding.deviceSpinner.setSelection(prefs.deviceType.get());
+        binding.deviceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
+                    case Constants.DEVICE_TYPE_DEFAULT -> {
+                        prefs.showGibIndicators.set(false);
+                        binding.showGibSwitch.setChecked(false);
+                        prefs.showGibIndicatorsAlways.set(false);
+                        binding.showGibAlwaysSwitch.setChecked(false);
+                        binding.gibOptions.setVisibility(View.GONE);
+                    }
+                    case Constants.DEVICE_TYPE_ATLAS -> {
+                        binding.gibOptions.setVisibility(View.VISIBLE);
+                    }
+                }
+                if (position != prefs.deviceType.get()) {
+                    prefs.deviceType.set(position);
+                    if (WidgetService.isRunning()) {
+                        WidgetService.getInstance().applyPreferences();
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        binder.bindCheckbox(binding.showGibSwitch, prefs.showGibIndicators);
+        binder.bindCheckbox(binding.showGibAlwaysSwitch, prefs.showGibIndicatorsAlways);
         binder.bindOffsetSeekbar(binding.adjustGibIndicatorsYSeekBar, binding.adjustGibIndicatorsYValueText, prefs.adjustGibIndicatorsY);
+
+        binding.openLogsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, LogsActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void startWidgetService() {

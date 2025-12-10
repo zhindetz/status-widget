@@ -71,4 +71,17 @@
     <string name="notification_content">Widget service is running</string>
 
     <string name="copyright_notice" translatable="false">© 2025 Dezz (tg: <a href="https://t.me/DezzK">DezzK</a>), S.Ramazanov (tg: <a href="https://t.me/RamazanovS">RamazanovS</a>)</string>
+
+
+    <string name="extra_configuration_title">Device specific settings</string>
+    <string name="device_dropdown">Select device type to activate extra options</string>
+    <string-array name="device_types">
+        <item>Default</item>
+        <item>Atlas</item>
+    </string-array>
+
+    <string name="show_logs">Show Logs</string>
+    <string name="hide_logs">Hide Logs</string>
+    <string name="clear_logs">Clear Logs</string>
+    <string name="log_header">Application Logs</string>
 </resources>
