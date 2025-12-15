@@ -19,6 +19,7 @@ package dezz.status.widget;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     ActivityMainBinding binding;
 
     Context themedContext;
+    private boolean isInitialized = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(LayoutInflater.from(themedContext));
         setContentView(binding.getRoot());
 
+        prefs.getSharedPrefs().registerOnSharedPreferenceChangeListener(preferenceChangeListener);
         initializeViews();
 
         if (prefs.widgetEnabled.get() && Permissions.allPermissionsGranted(this)) {
@@ -71,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        prefs.getSharedPrefs().unregisterOnSharedPreferenceChangeListener(preferenceChangeListener);
     }
 
     private void initializeViews() {
@@ -135,14 +139,13 @@ public class MainActivity extends AppCompatActivity {
                     prefs.nightModeSpinnerOption.set(position);
 
                     switch (position) {
-                        case 1 -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_NO);
-                        case 2 -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_YES);
-                        case 3 -> {
-                            if (WidgetService.isRunning()) {
-                                WidgetService.getInstance().saveNightModePrefBasedOnDaytimeAtCurrentLocation();
-                            }
+                        case 1 -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_NO); // Light 2nd option
+                        case 2 -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_YES); // Dark 3rd option
+                        case 3 -> { // Auto 4th option
+//                            Nothing to do here. updateOverlay() will schedule the run of
+//                            updateTwilightTimeRunnable, which will do the job.
                         }
-                        default -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                        default -> prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM); // System 1st option
                     }
                     if (WidgetService.isRunning()) {
                         WidgetService.getInstance().updateOverlay();
@@ -200,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
         binder.bindColorComponentSeekbar(binding.backgroundAlphaSeekBar, binding.backgroundAlphaValueText, prefs.backgroundAlpha);
         binder.bindOffsetSeekbar(binding.adjustTimeYSeekBar, binding.adjustTimeYValueText, prefs.adjustTimeY);
         binder.bindOffsetSeekbar(binding.adjustDateYSeekBar, binding.adjustDateYValueText, prefs.adjustDateY);
+        isInitialized = true;
     }
 
     private void startWidgetService() {
@@ -262,5 +266,14 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    // Listen for changes in night mode preference which is triggered by twilight occurrence (done in WidgetService)
+    private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = (sharedPreferences, key) -> {
+        if ("savedNightMode".equals(key)) {
+            if (isInitialized) { // Prevent recreate on first run
+                recreate(); // Update activity on theme change
+            }
+        }
+    };
 
 }
