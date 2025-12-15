@@ -58,6 +58,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.app.NotificationCompat;
+import androidx.core.os.HandlerCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -189,13 +190,11 @@ public class WidgetService extends Service {
     private static final int NOTIFICATION_ID = 1001;
     private static final String CHANNEL_ID = "WidgetServiceChannel";
     private static final long GNSS_STATUS_CHECK_INTERVAL = 1000;
-    private static final long TWILIGHT_CALC_INTERVAL = 10000;
+    private static final long TWILIGHT_CALC_INTERVAL = 900000;
     private static final long GIB_REFRESH_CHECK_INTERVAL = 120000;
     private static final long GIB_TEMPERATURE_CHECK_INTERVAL = 15000;
 
     private static WidgetService instance;
-
-    Context themedContext; // Required for the themed inflate, which uses attrs
 
     private Preferences prefs;
 
@@ -211,7 +210,7 @@ public class WidgetService extends Service {
     private GnssState gnssState = GnssState.OFF;
     private WiFiState wifiState = WiFiState.OFF;
 
-    // TODO Перенести состояния ГИБ в GibManager
+    // TODO Is it will be good to move GIB states to GibManage?
     private GibCycleState gibCycleState = GibCycleState.OUTER;
     private GibPlainState gibAcMaxState = GibPlainState.OFF;
     private GibPlainState gibElectricDefrostState = GibPlainState.OFF;
@@ -227,6 +226,8 @@ public class WidgetService extends Service {
     private LocationManager locationManager = null;
     private ConnectivityManager connectivityManager = null;
     private long lastLocationUpdateTime = 0;
+
+    private int locationUpdateCount = 300;
 
     private GradientDrawable background = null;
     private int bgColor = -1;
@@ -256,17 +257,77 @@ public class WidgetService extends Service {
         }
     };
 
-    private final Runnable updateDayNightModeRunnable = new Runnable() {
+    private final Runnable updateTwilightTimeRunnable = new Runnable() {
         @Override
         public void run() {
-            LogsActivity.log(TAG, "Interval check of day/night mode");
-            int initialNightMode = prefs.savedNightMode.get();
-            saveNightModePrefBasedOnDaytimeAtCurrentLocation(); // Update night mode periodically
-            if (initialNightMode != prefs.savedNightMode.get()) {
-                updateOverlay(); // Update the overlay if night mode has changed
+            LogsActivity.log(TAG, "Interval check of twilight time");
+            boolean isTwilightCalculationWasSuccessful = calculateTwilightAtCurrentLocation();
+            // Let's schedule the next check here, so it will not be duplicated in updateOverlay()
+            if (isTwilightCalculationWasSuccessful) {
+                mainHandler.postDelayed(this, TWILIGHT_CALC_INTERVAL);
+            } else {
+                mainHandler.postDelayed(this, 5000);
+                return;
             }
 
-            mainHandler.postDelayed(this, TWILIGHT_CALC_INTERVAL);
+            int initialNightMode = prefs.savedNightMode.get();
+            // Set night mode based on calculated state from TwilightCalculator, if different from current
+            if (initialNightMode == AppCompatDelegate.MODE_NIGHT_YES && Helpers.getDayNightState() == TwilightCalculator.DAY) {
+                LogsActivity.log(TAG, "Setting night mode to NO");
+                prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_NO);
+                updateOverlay(); // Update the overlay if night mode has changed. This will call applyPreferences() again
+            } else if (initialNightMode == AppCompatDelegate.MODE_NIGHT_NO && Helpers.getDayNightState() == TwilightCalculator.NIGHT) {
+                LogsActivity.log(TAG, "Setting night mode to YES");
+                prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_YES);
+                updateOverlay(); // Update the overlay if night mode has changed. This will call applyPreferences() again
+            }
+
+            // Schedule night mode update on next twilight, if it will occur before the next interval check for twilight
+            long millisecondsToNextTwilight = Helpers.getMillisecondsToNextTwilight();
+            if (millisecondsToNextTwilight > 0) {
+                if (millisecondsToNextTwilight < TWILIGHT_CALC_INTERVAL) {
+                    if (Helpers.getDayNightState() == TwilightCalculator.NIGHT) { // Night now, then set schedule to set NO when day comes
+                        if (HandlerCompat.hasCallbacks(mainHandler, setNightModeNoRunnable)) {
+                            mainHandler.removeCallbacks(setNightModeNoRunnable);
+                        }
+                        mainHandler.postDelayed(setNightModeNoRunnable, millisecondsToNextTwilight);
+                        LogsActivity.log(TAG, "Scheduled night mode set NO in " + millisecondsToNextTwilight + " milliseconds");
+                    } else { // Day now, then set schedule to set YES when night comes
+                        if (HandlerCompat.hasCallbacks(mainHandler, setNightModeYesRunnable)) {
+                            mainHandler.removeCallbacks(setNightModeYesRunnable);
+                        }
+                        mainHandler.postDelayed(setNightModeYesRunnable, millisecondsToNextTwilight);
+                        LogsActivity.log(TAG, "Scheduled night mode set YES in " + millisecondsToNextTwilight + " milliseconds");
+                    }
+                } else {
+                    LogsActivity.log(TAG, "It is not required to schedule night mode update for now since twilight will occur after the next interval check");
+                }
+            } else {
+                LogsActivity.log(TAG, "TwilightCalculator returned 0 or negative milliseconds to next twilight");
+            }
+
+        }
+    };
+
+    private final Runnable setNightModeYesRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (prefs.savedNightMode.get() != AppCompatDelegate.MODE_NIGHT_YES) {
+                LogsActivity.log(TAG, "Setting night mode to YES");
+                prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_YES);
+                updateOverlay(); // Update the overlay if night mode has changed
+            }
+        }
+    };
+
+    private final Runnable setNightModeNoRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (prefs.savedNightMode.get() != AppCompatDelegate.MODE_NIGHT_NO) {
+                LogsActivity.log(TAG, "Setting night mode to NO");
+                prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_NO);
+                updateOverlay(); // Update the overlay if night mode has changed
+            }
         }
     };
 
@@ -299,6 +360,12 @@ public class WidgetService extends Service {
                 setGnssStatus(GnssState.GOOD);
             } else {
                 setGnssStatus(GnssState.BAD);
+            }
+
+            if (++locationUpdateCount > 300) {
+                prefs.latitude.set(location.getLatitude());
+                prefs.longitude.set(location.getLongitude());
+                locationUpdateCount = 0;
             }
         }
 
@@ -384,7 +451,7 @@ public class WidgetService extends Service {
     private void createOverlayView() {
         // Create the overlay view
         LogsActivity.log(TAG, "Creating overlay view");
-        themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this));
+        Context themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this));
 
         LayoutInflater layoutInflater = LayoutInflater.from(themedContext);
 
@@ -465,6 +532,7 @@ public class WidgetService extends Service {
 
         float timeOutlineWidth = Math.max(2F, prefs.timeFontSize.get() / 32F);
         float dateOutlineWidth = Math.max(2F, prefs.dateFontSize.get() / 32F);
+        Context themedContext = new ContextThemeWrapper(this, Helpers.getThemeResId(this));
         int outlineColor = Helpers.getColorFromAttr(themedContext, R.attr.text_outline) & 0x00FFFFFF | (prefs.textOutlineAlpha.get() << 24); // Direct use of R.attr will give ID of attr, but not color
         binding.timeText.setOutlineColor(outlineColor);
         binding.timeText.setOutlineWidth(timeOutlineWidth);
@@ -535,28 +603,35 @@ public class WidgetService extends Service {
             }
             if (prefs.showGnssIcon.get()) { // Monitor GNSS status
                 locationManager.registerGnssStatusCallback(gnssStatusCallback, mainHandler);
-                if (!mainHandler.hasCallbacks(updateGnssStatusRunnable)) {
+                if (!HandlerCompat.hasCallbacks(mainHandler, updateGnssStatusRunnable)) {
                     mainHandler.postDelayed(updateGnssStatusRunnable, GNSS_STATUS_CHECK_INTERVAL);
                     updateGnssStatus();
                 }
             } else { // Do not monitor GNSS status, but still monitor location updates for day/night mode
-                if (locationManager != null) {
+                if (HandlerCompat.hasCallbacks(mainHandler, updateGnssStatusRunnable)) {
                     LogsActivity.log(TAG, "Removing location updates and GNSS status callback");
                     mainHandler.removeCallbacks(updateGnssStatusRunnable);
-                    locationManager.unregisterGnssStatusCallback(gnssStatusCallback);
                 }
+                locationManager.unregisterGnssStatusCallback(gnssStatusCallback);
             }
             if (prefs.nightModeSpinnerOption.get() == 3) { // Monitor day/nighttime at current location
-                if (!mainHandler.hasCallbacks(updateDayNightModeRunnable)) {
-                    mainHandler.postDelayed(updateDayNightModeRunnable, TWILIGHT_CALC_INTERVAL);
+                if (!HandlerCompat.hasCallbacks(mainHandler, updateTwilightTimeRunnable)) {
+                    LogsActivity.log(TAG, "Registered twilight time update runnable");
+                    mainHandler.postDelayed(updateTwilightTimeRunnable, 2000);
                 }
             } else { // Do not monitor day/nighttime but still monitor location updates for GNSS status
-                LogsActivity.log(TAG, "Removing day/night mode update");
-                mainHandler.removeCallbacks(updateDayNightModeRunnable);
+                if (HandlerCompat.hasCallbacks(mainHandler, updateTwilightTimeRunnable)) {
+                    LogsActivity.log(TAG, "Removing twilight and day/night mode update");
+                    mainHandler.removeCallbacks(updateTwilightTimeRunnable);
+                }
+                mainHandler.removeCallbacks(setNightModeYesRunnable);
+                mainHandler.removeCallbacks(setNightModeNoRunnable);
             }
-        } else if (locationManager != null) { // locationManager is not needed anymore
+        } else if (locationManager != null) { // then locationManager is not needed anymore
             LogsActivity.log(TAG, "Removing all location callbacks");
-            mainHandler.removeCallbacks(updateDayNightModeRunnable);
+            mainHandler.removeCallbacks(updateTwilightTimeRunnable);
+            mainHandler.removeCallbacks(setNightModeYesRunnable);
+            mainHandler.removeCallbacks(setNightModeNoRunnable);
             mainHandler.removeCallbacks(updateGnssStatusRunnable);
             locationManager.removeUpdates(locationListener);
             locationManager.unregisterGnssStatusCallback(gnssStatusCallback);
@@ -638,32 +713,15 @@ public class WidgetService extends Service {
         }
     }
 
-    // It is not good to update preferences from Service class, but it already has locationManager
-    // and Runnable for interval check.
-    @SuppressLint("MissingPermission")
-    protected void saveNightModePrefBasedOnDaytimeAtCurrentLocation() {
-        LogsActivity.log(TAG, "Setting night mode based on sunrise/sunset");
-        if (locationManager == null) {
-            locationManager = getSystemService(LocationManager.class);
-        }
-        Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    protected boolean calculateTwilightAtCurrentLocation() {
+        LogsActivity.log(TAG, "Calculating twilight based on current location");
+        double latitude = prefs.latitude.get();
+        double longitude = prefs.longitude.get();
 
-        if (lastKnownLocation == null) {
-            // Try network provider or a different method (e.g., FusedLocationProviderClient)
-            lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        if (latitude != 0 && longitude != 0) {
+            return Helpers.calculateTwilight(latitude, longitude);
         }
-
-        if (lastKnownLocation != null) {
-            LogsActivity.log(TAG, "Last known location: " + lastKnownLocation);
-            prefs.savedNightMode.set(
-                    Helpers.isNightNow(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude())
-                            ? AppCompatDelegate.MODE_NIGHT_YES
-                            : AppCompatDelegate.MODE_NIGHT_NO
-            );
-        } else if (prefs.savedNightMode.get() == -1) {
-            LogsActivity.log(TAG, "No location available, defaulting to follow system");
-            prefs.savedNightMode.set(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-        }
+        return false;
     }
 
     private Drawable getBackground(int color, int cornerRadius) {
@@ -932,7 +990,9 @@ public class WidgetService extends Service {
         super.onDestroy();
         instance = null;
 
-        mainHandler.removeCallbacks(updateDayNightModeRunnable);
+        mainHandler.removeCallbacks(updateTwilightTimeRunnable);
+        mainHandler.removeCallbacks(setNightModeYesRunnable);
+        mainHandler.removeCallbacks(setNightModeNoRunnable);
         mainHandler.removeCallbacks(updateGnssStatusRunnable);
         mainHandler.removeCallbacks(updateDateTimeRunnable);
 

@@ -2,6 +2,7 @@ package dezz.status.widget;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.util.Log;
 import android.util.TypedValue;
 
 import androidx.appcompat.app.AppCompatDelegate;
@@ -14,22 +15,91 @@ public class Helpers {
     private static final TwilightCalculator twilightCalculator = new TwilightCalculator();
 
     /**
-     * Determines whether the current time ({@link System#currentTimeMillis}) is within the night phase (night) for the given coordinates.
+     * Calculates the sunrise and sunset times (civil twilight) for the given location and current time.
      * <p>
-     * The method uses the twilight calculator {@link TwilightCalculator} to calculate the current light state
-     * based on the current system time and geographic coordinates (latitude and longitude).
-     * </p>
+     * This method uses the {@link TwilightCalculator} to determine the daily twilight period based on
+     * the provided latitude and longitude. If the sun never rises or never sets at the given location
+     * (e.g., polar day or polar night), the calculation will fail, and the method returns {@code false}.
+     * <p>
+     * After calling this method, the results can be retrieved using:
+     * <ul>
+     *     <li>{@link #getDayNightState()} — to get the current day/night state.</li>
+     *     <li>{@link #getMillisecondsToNextTwilight()} — to get the time until the next transition.</li>
+     * </ul>
      *
-     * @param latitude is the location's latitude (in degrees, for example: 55.7558 for Moscow)
-     * @param longitude is the location's longitude (in degrees, for example: 37.6176 for Moscow)
-     * @return {@code true} if it is nighttime at the specified location; {@code false} if it is daytime
+     * @param latitude  the geographical latitude of the location in degrees (positive for north,
+     *                  negative for south)
+     * @param longitude the geographical longitude of the location in degrees (positive for east,
+     *                  negative for west)
+     * @return {@code true} if the twilight calculation was successful and sunrise/sunset times are valid;
+     *         {@code false} if the sun never rises or never sets at this location and time (e.g.,
+     *         polar regions during polar day/night)
      *
-     * @see TwilightCalculator
      * @see TwilightCalculator#calculateTwilight(long, double, double)
+     * @see #getDayNightState()
+     * @see #getMillisecondsToNextTwilight()
      */
-    public static boolean isNightNow(double latitude, double longitude) {
+    public static boolean calculateTwilight(double latitude, double longitude) {
+        Log.d(TAG, "calculateTwilight called");
         twilightCalculator.calculateTwilight(System.currentTimeMillis(), latitude, longitude);
-        return twilightCalculator.mState == TwilightCalculator.NIGHT;
+        if (twilightCalculator.mSunrise == -1 || twilightCalculator.mSunset == -1) {
+            Log.d(TAG, "Twilight will never occur");
+            return false;
+        }
+        return true;
+    }
+    /**
+     * Returns the current day/night state as determined by the latest twilight calculation.
+     * <p>
+     * The returned value is one of:
+     * <ul>
+     *     <li>{@link TwilightCalculator#DAY} — if it is currently daytime (between sunrise and sunset)</li>
+     *     <li>{@link TwilightCalculator#NIGHT} — if it is currently nighttime (before sunrise or after sunset)</li>
+     * </ul>
+     * <p>
+     * This state is calculated based on civil twilight and assumes that night begins in the evening
+     * after sunset and ends in the morning at sunrise.
+     * <p>
+     * Note: The state is only valid after a successful call to {@link #calculateTwilight(double, double)}.
+     * If no calculation has been performed yet, the returned value may be outdated or incorrect.
+     *
+     * @return the current day/night state, either {@link TwilightCalculator#DAY} or {@link TwilightCalculator#NIGHT}
+     *
+     * @see #calculateTwilight(double, double)
+     * @see #getMillisecondsToNextTwilight()
+     */
+    public static int getDayNightState() {
+        return twilightCalculator.mState;
+    }
+
+    /**
+     * Returns the number of milliseconds until the next twilight transition (sunrise or sunset).
+     * <p>
+     * If it is currently night, this method returns the time until sunrise.
+     * If it is currently day, it returns the time until sunset.
+     * <p>
+     * This value can be used to schedule updates or alarms for dynamic theme switching
+     * or UI changes based on day/night cycles.
+     * <p>
+     * If the twilight calculation has not been performed yet or resulted in invalid data
+     * (e.g., polar day/night where sunrise/sunset does not occur), the return value
+     * may be negative or inaccurate. It is recommended to call {@link #calculateTwilight(double, double)}
+     * first to ensure valid results.
+     *
+     * @return the number of milliseconds until the next transition (sunrise or sunset),
+     *         which may be negative if the event has already passed, or zero if imminent
+     *
+     * @see #calculateTwilight(double, double)
+     * @see #getDayNightState()
+     */
+    public static long getMillisecondsToNextTwilight() {
+        if (twilightCalculator.mState == TwilightCalculator.NIGHT) {
+            // It is night → wait for sunrise
+            return twilightCalculator.mSunrise - System.currentTimeMillis();
+        } else {
+            // It is day → wait for sunset
+            return twilightCalculator.mSunset - System.currentTimeMillis();
+        }
     }
 
     /**

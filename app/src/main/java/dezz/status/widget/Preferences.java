@@ -83,6 +83,28 @@ public class Preferences {
         }
     }
 
+    public static final class Double extends Preference {
+        private final double defaultValue;
+
+        public Double(Preferences preferences, String key, double defaultValue) {
+            super(preferences, key);
+            this.defaultValue = defaultValue;
+        }
+
+        public double get() {
+            return java.lang.Double.longBitsToDouble(preferences.prefs.getLong(key, java.lang.Double.doubleToRawLongBits(defaultValue)));
+        }
+
+        public void set(double value) {
+            long currentValueBits = preferences.prefs.getLong(key, java.lang.Double.doubleToRawLongBits(defaultValue));
+            long newValueBits = java.lang.Double.doubleToRawLongBits(value);
+            if (newValueBits == currentValueBits) {
+                return;
+            }
+            preferences.prefs.edit().putLong(key, newValueBits).apply();
+        }
+    }
+
     private final SharedPreferences prefs;
 
     public final Bool widgetEnabled = new Bool(this, "enabled", false);
@@ -107,6 +129,8 @@ public class Preferences {
     public final Int adjustDateY = new Int(this, "adjustDateY", 0);
     public final Int overlayX = new Int(this, "overlayX", 200);
     public final Int overlayY = new Int(this, "overlayY", 300);
+    public final Double longitude = new Double(this, "longitude", 0);
+    public final Double latitude = new Double(this, "latitude", 0);
 
 
     public final Int deviceType = new Int(this, "deviceType", Constants.DEVICE_TYPE_DEFAULT);
@@ -117,5 +141,9 @@ public class Preferences {
     public Preferences(Context context) {
         final Context deviceContext = context.getApplicationContext().createDeviceProtectedStorageContext();
         prefs = deviceContext.getSharedPreferences(context.getPackageName() + "_preferences", Context.MODE_PRIVATE);
+    }
+
+    public SharedPreferences getSharedPrefs() {
+        return prefs;
     }
 }
