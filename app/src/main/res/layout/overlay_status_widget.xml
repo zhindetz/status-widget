@@ -147,24 +147,13 @@
             android:src="@drawable/ic_gib_seat_right_off"
             tools:ignore="ContentDescription" />
         <dezz.status.widget.OutlineTextView
-            android:id="@+id/gibIndoorTemp"
+            android:id="@+id/gibTemperatures"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="@dimen/optionsMarginSmall"
             android:fontFamily="@font/roboto_condensed_medium"
-            android:text="-12.3°"
-            android:textColor="?attr/text_primary"
-            android:textSize="20sp"
-            tools:ignore="HardcodedText" />
-        <dezz.status.widget.OutlineTextView
-            android:id="@+id/gibOutdoorTemp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="@dimen/optionsMarginSmall"
-            android:fontFamily="@font/roboto_condensed_medium"
-            android:text="-23.4°"
+            android:text="-12.3°\n-23.4°"
             android:textColor="?attr/text_primary"
             android:textSize="20sp"
             tools:ignore="HardcodedText" />

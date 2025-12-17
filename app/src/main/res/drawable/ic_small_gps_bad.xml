@@ -1,0 +1,14 @@
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="vector"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:name="gps_out_good"
+        android:pathData="M 40.852 28.758 C 40.782 33.235 37.791 36.728 31.924 44.459 C 26.082 36.728 23.027 33.114 23.027 28.735 C 23.027 24.357 26.432 19.832 31.924 19.832 C 37.418 19.832 40.845 24.357 40.852 28.758 Z"
+        android:strokeColor="?attr/text_primary"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2" />
+</vector>

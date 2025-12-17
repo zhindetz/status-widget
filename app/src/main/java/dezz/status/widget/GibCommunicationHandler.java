@@ -61,7 +61,7 @@ public class GibCommunicationHandler {
             }
         }
         context.sendBroadcast(intent);
-        LogsActivity.log(TAG, "sendIntent: action = " + action + ", extra = " + extra);
+//        LogsActivity.log(TAG, "sendIntent: action = " + action + ", extra = " + extra);
         return this;
     }
 
@@ -73,7 +73,7 @@ public class GibCommunicationHandler {
             if (extras != null) {
                 for (String key : extras.keySet()) {
                     Object value = extras.get(key);
-                    extrasLog.append("\n    ").append(key).append(" = ").append(value != null ? value : "null")
+                    extrasLog.append("    ").append(key).append(" = ").append(value != null ? value : "null")
                             .append(" [").append(value != null ? value.getClass().getSimpleName() : "null").append("]\n");
                 }
             } else {
@@ -83,18 +83,18 @@ public class GibCommunicationHandler {
             LogsActivity.log(TAG, "getIntent: action: " + intent.getAction()
 //                    + ", data: " + intent.getData() // It is null anyway
 //                    + ", package: " + intent.getPackage()
-                    + ", extras: {" + extrasLog.toString() + "}"
+                    + ", extras: {\n" + extrasLog.toString() + "}"
             );
 
 
             Object idObj = intent.getExtras() != null ? intent.getExtras().get("id") : null;
             int id = parseAsInt(idObj, -1);
             Object valueObj = intent.getExtras() != null ? intent.getExtras().get("value") : null;
-            float value = parseAsFloat(valueObj, -1);
+            int value = parseAsInt(valueObj, -999);
             Object areaObj = intent.getExtras() != null ? intent.getExtras().get("area") : null;
             int area = parseAsInt(areaObj, -1);
 
-            if (id != -1 && value != -1) {
+            if (id != -1 && value != -999) {
                 if (id == deviceSpecificConstants.getCirculationId()) {
                     if (value == Constants.IGibConstants.VALUE_OFF) {
                         LogsActivity.log(TAG, "Air circulation: off");
@@ -270,9 +270,9 @@ public class GibCommunicationHandler {
                         LogsActivity.log(TAG, "Seat heat: unknown area = " + area);
                     }
                 } else if (id == deviceSpecificConstants.getIndoorTempId()) {
-                    GibManager.getInstance(context).setIndoorTemp(value);
+                    GibManager.getInstance(context).setIndoorTemp(parseAsFloat(valueObj, -99.9f));
                 } else if (id == deviceSpecificConstants.getOutdoorTempId()) {
-                    GibManager.getInstance(context).setOutdoorTemp(value);
+                    GibManager.getInstance(context).setOutdoorTemp(parseAsFloat(valueObj, -99.9f));
                 } else {
                     LogsActivity.log(TAG, "Unknown: ID = " + id);
                 }

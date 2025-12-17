@@ -1,0 +1,21 @@
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="vector"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:name="stroke"
+        android:pathData="M 42.764 18.472 L 20.977 41.482"
+        android:strokeColor="?attr/text_primary"
+        android:strokeLineCap="round"
+        android:strokeWidth="2"/>
+    <path
+        android:name="wifi_out_bad"
+        android:pathData="M 42.351 22.415 L 31.936 44.465 L 28.825 37.909 M 27.196 34.474 L 21.473 22.415 C 24.605 20.822 28.159 19.929 31.936 19.878 C 34.473 19.913 37.028 20.398 39.386 21.198"
+        android:strokeColor="?attr/text_primary"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2"/>
+</vector>

@@ -32,7 +32,7 @@
             android:id="@+id/logsTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/optionsTextSizeLabel"
+            android:textSize="@dimen/optionsTextSizeFooter"
             android:textColor="?attr/text_primary"
             android:fontFamily="monospace"
             android:scrollbars="vertical" />

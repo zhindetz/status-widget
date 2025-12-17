@@ -5,13 +5,8 @@
     <dimen name="optionsTextSizeLabel">24sp</dimen>
     <dimen name="optionsTextSizeFooter">12sp</dimen>
 
-    <dimen name="optionsPaddingHorizontal">24sp</dimen>
-    <dimen name="optionsPaddingVertical">12sp</dimen>
-    <dimen name="optionsMarginBig">20sp</dimen>
-    <dimen name="optionsMargin">16sp</dimen>
-    <dimen name="optionsMarginMedium">12sp</dimen>
-    <dimen name="optionsMarginSmall">8sp</dimen>
-    <dimen name="optionsScrollbarSize">8sp</dimen>
-    <dimen name="optionsLineHeight">48sp</dimen>
-    <dimen name="optionsElevation">2sp</dimen>
+    <dimen name="gibIconStrokeWidth">3</dimen>
+    <dimen name="gibIconStrokeFillWidth">1</dimen>
+    <dimen name="gibIconBackStrokeWidth">5</dimen>
+    <dimen name="gibIconBackStrokeFillWidth">2</dimen>
 </resources>

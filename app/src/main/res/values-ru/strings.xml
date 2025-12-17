@@ -27,6 +27,7 @@
         <item>Цветные</item>
         <item>Индикаторы</item>
         <item>Андроид</item>
+        <item>Маленькие</item>
     </string-array>
     <string name="night_mode">Ночной режим</string>
     <string-array name="night_mode_types">

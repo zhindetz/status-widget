@@ -1,0 +1,31 @@
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="vector"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:name="wifi_out_good"
+        android:pathData="M 42.351 22.415 L 31.936 44.465 L 21.473 22.415 C 24.605 20.822 28.159 19.929 31.936 19.878 C 35.583 19.929 39.27 20.908 42.351 22.415 Z"
+        android:strokeColor="?attr/text_primary"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2"/>
+    <group android:name="wifi_in">
+        <path
+            android:name="wifi_in_3"
+            android:pathData="M 24.23 27.911 C 26.542 26.745 29.155 26.089 31.922 26.089 C 34.688 26.089 37.301 26.745 39.613 27.911"
+            android:strokeColor="?attr/text_primary"
+            android:strokeWidth="2"/>
+        <path
+            android:name="wifi_in_2"
+            android:pathData="M 27 33.414 C 28.479 32.669 30.152 32.248 31.922 32.248 C 33.692 32.248 35.364 32.669 36.843 33.414"
+            android:strokeColor="?attr/text_primary"
+            android:strokeWidth="2"/>
+        <path
+            android:name="wifi_in_1"
+            android:pathData="M 29.666 38.972 C 30.338 38.612 31.106 38.408 31.922 38.408 C 32.737 38.408 33.505 38.612 34.178 38.972"
+            android:strokeColor="?attr/text_primary"
+            android:strokeWidth="2"/>
+    </group>
+</vector>

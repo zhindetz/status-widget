@@ -120,6 +120,17 @@ public class WidgetService extends Service {
             R.drawable.ic_material_wifi_internet
     };
 
+    private static final int[] GNSS_ICONS_SMALL = {
+            R.drawable.ic_small_gps_off,
+            R.drawable.ic_small_gps_bad,
+            R.drawable.ic_small_gps_good
+    };
+    private static final int[] WIFI_ICONS_SMALL = {
+            R.drawable.ic_small_wifi_off,
+            R.drawable.ic_small_wifi_no_internet,
+            R.drawable.ic_small_wifi_internet
+    };
+
 
     protected enum GibCycleState {
         OUTER, INNER
@@ -189,10 +200,10 @@ public class WidgetService extends Service {
     private static final String TAG = "WidgetService";
     private static final int NOTIFICATION_ID = 1001;
     private static final String CHANNEL_ID = "WidgetServiceChannel";
-    private static final long GNSS_STATUS_CHECK_INTERVAL = 1000;
-    private static final long TWILIGHT_CALC_INTERVAL = 900000;
-    private static final long GIB_REFRESH_CHECK_INTERVAL = 120000;
-    private static final long GIB_TEMPERATURE_CHECK_INTERVAL = 15000;
+    private static final long GNSS_STATUS_CHECK_INTERVAL = 1_000;
+    private static final long TWILIGHT_CALC_INTERVAL = 900_000;
+    private static final long GIB_REFRESH_CHECK_INTERVAL = 20_000;
+    private static final long GIB_TEMPERATURE_CHECK_INTERVAL = 30_000;
 
     private static WidgetService instance;
 
@@ -410,7 +421,7 @@ public class WidgetService extends Service {
     private final Runnable updatePropertiesFromGibRunnable = new Runnable() {
         @Override
         public void run() {
-            LogsActivity.log(TAG, "Interval check of properties from GIB");
+//            LogsActivity.log(TAG, "Interval check of properties from GIB");
             GibManager.getInstance(getBaseContext()).sendIntentsToGetCurrentGibProperties();
 
             mainHandler.postDelayed(this, GIB_REFRESH_CHECK_INTERVAL);
@@ -420,7 +431,7 @@ public class WidgetService extends Service {
     private final Runnable updateTemperaturesFromGibRunnable = new Runnable() {
         @Override
         public void run() {
-            LogsActivity.log(TAG, "Interval check of temperatures from GIB");
+//            LogsActivity.log(TAG, "Interval check of temperatures from GIB");
             GibManager.getInstance(getBaseContext()).sendIntentsToGetCurrentGibTemperatures();
 
             mainHandler.postDelayed(this, GIB_TEMPERATURE_CHECK_INTERVAL);
@@ -711,6 +722,10 @@ public class WidgetService extends Service {
                 binding.gibSeatRearRight.setVisibility(View.INVISIBLE);
             }
         }
+
+        binding.gibTemperatures.setOutlineColor(outlineColor);
+        binding.gibTemperatures.setOutlineWidth(dateOutlineWidth);
+        binding.gibTemperatures.setTextSize(TypedValue.COMPLEX_UNIT_PX, prefs.dateFontSize.get());
     }
 
     protected boolean calculateTwilightAtCurrentLocation() {
@@ -829,7 +844,7 @@ public class WidgetService extends Service {
     }
 
     private void updateWifiStatus() {
-        updateIconStatus(WIFI_ICONS_MONO, WIFI_ICONS_COLOR, WIFI_ICONS_MONOCOLOR, WIFI_ICONS_MATERIAL, binding.wifiStatusIcon, wifiState.ordinal());
+        updateIconStatus(WIFI_ICONS_MONO, WIFI_ICONS_COLOR, WIFI_ICONS_MONOCOLOR, WIFI_ICONS_MATERIAL, WIFI_ICONS_SMALL, binding.wifiStatusIcon, wifiState.ordinal());
     }
 
     private void setGnssStatus(GnssState newState) {
@@ -838,7 +853,7 @@ public class WidgetService extends Service {
     }
 
     private void updateGnssStatus() {
-        updateIconStatus(GNSS_ICONS_MONO, GNSS_ICONS_COLOR, GNSS_ICONS_MONOCOLOR, GNSS_ICONS_MATERIAL, binding.gnssStatusIcon, gnssState.ordinal());
+        updateIconStatus(GNSS_ICONS_MONO, GNSS_ICONS_COLOR, GNSS_ICONS_MONOCOLOR, GNSS_ICONS_MATERIAL, GNSS_ICONS_SMALL, binding.gnssStatusIcon, gnssState.ordinal());
     }
 
     protected void setGibCycleStatus(GibCycleState newState) {
@@ -941,23 +956,20 @@ public class WidgetService extends Service {
         );
     }
 
-    protected void setGibIndicatorIndoorTemp(float value) {
-        binding.gibIndoorTemp.setText(String.format(Locale.getDefault(), "%.1f°", value));
-    }
-
-    protected void setGibIndicatorOutdoorTemp(float value) {
-        binding.gibOutdoorTemp.setText(String.format(Locale.getDefault(), "%.1f°", value));
+    protected void setGibIndicatorTemperatures(String value) {
+        binding.gibTemperatures.setText(value);
     }
 
     private void updateIconStatus(int[] resources, ImageView icon, int state) {
             icon.setImageResource(resources[state]);
     }
-    private void updateIconStatus(int[] monoResources, int[] colorResources, int[] monocolorResources, int[] materialResources, ImageView icon, int state) {
+    private void updateIconStatus(int[] monoResources, int[] colorResources, int[] monocolorResources, int[] materialResources, int[] smallResources, ImageView icon, int state) {
         switch (prefs.iconStyle.get()) {
             case 0 -> icon.setImageResource(monoResources[state]);
             case 1 -> icon.setImageResource(colorResources[state]);
             case 2 -> icon.setImageResource(monocolorResources[state]);
             case 3 -> icon.setImageResource(materialResources[state]);
+            case 4 -> icon.setImageResource(smallResources[state]);
         }
     }
 

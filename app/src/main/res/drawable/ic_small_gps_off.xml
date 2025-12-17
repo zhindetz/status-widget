@@ -1,0 +1,21 @@
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="vector"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:name="gps_out_bad"
+        android:pathData="M 25.462 35.615 C 23.703 32.875 23.013 30.92 23.013 28.731 C 23.013 26.542 23.865 24.316 25.402 22.637 C 26.94 20.959 29.163 19.828 31.91 19.828 C 34.656 19.828 36.578 20.843 38.122 22.307 M 40.339 25.841 C 40.445 26.143 40.834 27.2 40.838 28.754 C 40.843 30.993 40.037 32.985 38.547 35.384 C 37.057 37.783 34.843 40.589 31.91 44.455 C 28.989 40.589 28.63 40.161 27.988 39.256"
+        android:strokeColor="?attr/text_primary"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"/>
+    <path
+        android:name="stroke"
+        android:pathData="M 42.764 18.472 L 20.977 41.482"
+        android:strokeColor="?attr/text_primary"
+        android:strokeLineCap="round"
+        android:strokeWidth="2"/>
+</vector>

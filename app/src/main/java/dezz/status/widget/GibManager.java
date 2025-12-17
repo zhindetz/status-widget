@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import java.util.Locale;
+
 
 public class GibManager {
     private static final String TAG = "GibManager";
@@ -80,7 +82,7 @@ public class GibManager {
                 .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getSeatCoolId()).setArea(constants.getSeatAreaFrontRight()))
                 .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaRearLeft()))
                 .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_GET, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaRearRight()));
-        LogsActivity.log(TAG, "Intents for GIB getting current properties are sent");
+//        LogsActivity.log(TAG, "Intents for GIB getting current properties are sent");
     }
 
     protected void sendIntentsToGetCurrentGibTemperatures() {
@@ -88,7 +90,7 @@ public class GibManager {
         GibCommunicationHandler.getInstance(context)
                 .sendIntent(Constants.IGibConstants.INTENT_ACTION_SENSOR_GET, GibIntentExtra.create().setId(constants.getIndoorTempId()))
                 .sendIntent(Constants.IGibConstants.INTENT_ACTION_SENSOR_GET, GibIntentExtra.create().setId(constants.getOutdoorTempId()));
-        LogsActivity.log(TAG, "Intents for GIB getting current temperatures are sent");
+//        LogsActivity.log(TAG, "Intents for GIB getting current temperatures are sent");
     }
 
     private void sendIntentsToListenGibChanges() {
@@ -106,7 +108,7 @@ public class GibManager {
                 .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getSeatCoolId()).setArea(constants.getSeatAreaFrontRight()))
                 .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaRearLeft()))
                 .sendIntent(Constants.IGibConstants.INTENT_ACTION_PROPERTY_LISTEN, GibIntentExtra.create().setId(constants.getSeatHeatId()).setArea(constants.getSeatAreaRearRight()));
-        LogsActivity.log(TAG, "Intents for GIB listening are sent");
+//        LogsActivity.log(TAG, "Intents for GIB listening are sent");
     }
 
     public void unregister() {
@@ -127,11 +129,17 @@ public class GibManager {
 
     public void setIndoorTemp(float indoorTemp) {
         this.indoorTemp = indoorTemp;
-        WidgetService.getInstance().setGibIndicatorIndoorTemp(indoorTemp);
+        WidgetService.getInstance().setGibIndicatorTemperatures(buildTemperatureString());
     }
 
     public void setOutdoorTemp(float outdoorTemp) {
         this.outdoorTemp = outdoorTemp;
-        WidgetService.getInstance().setGibIndicatorOutdoorTemp(outdoorTemp);
+        WidgetService.getInstance().setGibIndicatorTemperatures(buildTemperatureString());
+    }
+
+    private String buildTemperatureString() {
+        return String.format(Locale.getDefault(), "%.1f°", outdoorTemp) + "°C" +
+                "\n" +
+                String.format(Locale.getDefault(), "%.1f°", indoorTemp) + "°C";
     }
 }

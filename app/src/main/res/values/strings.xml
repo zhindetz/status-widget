@@ -27,6 +27,7 @@
         <item>Colorful</item>
         <item>Mono-color</item>
         <item>Material</item>
+        <item>Small</item>
     </string-array>
     <string name="night_mode">Night Mode</string>
     <string-array name="night_mode_types">
