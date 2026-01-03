@@ -200,9 +200,12 @@ public class Helpers {
             return defaultValue;
         } else if (obj instanceof String s && !s.isEmpty()) {
             try {
-                return Integer.parseInt(s);
+                // At first, parse as double (in case of a fractional string)
+                double doubleValue = Double.parseDouble(s);
+                // Then, round to the nearest integer and convert to int
+                return (int) Math.round(doubleValue);
             } catch (NumberFormatException e) {
-                LogsActivity.log(TAG, "Cannot parse as int: " + s, e);
+                LogsActivity.log(TAG, "Cannot parse as number: " + s, e);
                 return defaultValue;
             }
         } else if (obj instanceof Integer i) {

@@ -55,6 +55,7 @@
     <string name="show_gnss">Show GNSS icon</string>
     <string name="show_gib_indicators">Show GIB Indicators</string>
     <string name="show_gib_indicators_always">Do not hide GIB Indicators when car function is off</string>
+    <string name="schedule_gib_properties_refresh">Schedule GIB Properties Refresh</string>
     <string name="spacing_between_text_and_icons_size">Spacing between texts and icons</string>
     <string name="text_outline_transparency">Text outline transparency</string>
     <string name="background_transparency">Background transparency</string>

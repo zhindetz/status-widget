@@ -576,6 +576,16 @@
                         android:textColor="?attr/text_primary"
                         android:textSize="@dimen/optionsTextSizeLabel" />
 
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/scheduleRefreshGibPropertiesSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/optionsMarginSmall"
+                        android:minHeight="@dimen/optionsLineHeight"
+                        android:text="@string/schedule_gib_properties_refresh"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="@dimen/optionsTextSizeLabel" />
+
                     <!-- Adjust GIB Indicators Y -->
                     <TextView
                         android:layout_width="match_parent"

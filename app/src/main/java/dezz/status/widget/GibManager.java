@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
+import android.os.Looper;
 
 import java.util.Locale;
 
@@ -11,13 +13,16 @@ import java.util.Locale;
 public class GibManager {
     private static final String TAG = "GibManager";
     private static GibManager instance;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private boolean isListening = false;
     private final Context context;
     private final Preferences prefs;
     private final int deviceType;
 
-    private float indoorTemp = 0;
-    private float outdoorTemp = 0;
+    private float indoorTemp = 0f;
+    private float outdoorTemp = 0f;
+    private float fuelLevel = 0f;
+    private float fuelPercentOfFilled = 0f;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -60,7 +65,7 @@ public class GibManager {
                 LogsActivity.log(TAG, "BroadcastReceiver is registered");
                 sendIntentsToListenGibChanges();
                 sendIntentsToGetCurrentGibProperties();
-                sendIntentsToGetCurrentGibTemperatures();
+                sendIntentsToGetCurrentGibSensors();
             } catch (Exception e) {
                 LogsActivity.log(TAG, "Error registering BroadcastReceiver", e);
             }
@@ -85,11 +90,13 @@ public class GibManager {
 //        LogsActivity.log(TAG, "Intents for GIB getting current properties are sent");
     }
 
-    protected void sendIntentsToGetCurrentGibTemperatures() {
+    protected void sendIntentsToGetCurrentGibSensors() {
         Constants.IGibConstants constants = GibCommunicationHandler.getInstance(context).getDeviceSpecificConstants();
         GibCommunicationHandler.getInstance(context)
                 .sendIntent(Constants.IGibConstants.INTENT_ACTION_SENSOR_GET, GibIntentExtra.create().setId(constants.getIndoorTempId()))
-                .sendIntent(Constants.IGibConstants.INTENT_ACTION_SENSOR_GET, GibIntentExtra.create().setId(constants.getOutdoorTempId()));
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_SENSOR_GET, GibIntentExtra.create().setId(constants.getOutdoorTempId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_SENSOR_GET, GibIntentExtra.create().setId(constants.getFuelLevelId()))
+                .sendIntent(Constants.IGibConstants.INTENT_ACTION_SENSOR_GET, GibIntentExtra.create().setId(constants.getFuelPercentageId()));
 //        LogsActivity.log(TAG, "Intents for GIB getting current temperatures are sent");
     }
 
@@ -129,17 +136,29 @@ public class GibManager {
 
     public void setIndoorTemp(float indoorTemp) {
         this.indoorTemp = indoorTemp;
-        WidgetService.getInstance().setGibIndicatorTemperatures(buildTemperatureString());
+        mainHandler.postDelayed(() -> WidgetService.getInstance().setGibIndicatorTemperatures(buildTemperatureString()), 2_000);
     }
 
     public void setOutdoorTemp(float outdoorTemp) {
         this.outdoorTemp = outdoorTemp;
-        WidgetService.getInstance().setGibIndicatorTemperatures(buildTemperatureString());
+//        WidgetService.getInstance().setGibIndicatorTemperatures(buildTemperatureString()); // setIndoorTemp() will update value on screen
+    }
+
+    public void setFuelLevel(float fuelLevel) { // TODO: Remove, since it is not in use on Atlas
+        this.fuelLevel = fuelLevel;
+//        WidgetService.getInstance().setGibIndicatorTemperatures(buildTemperatureString()); // setIndoorTemp() will update value on screen
+    }
+
+    public void setFuelPercent(float percentOfFilled) {
+        this.fuelPercentOfFilled = percentOfFilled;
+//        WidgetService.getInstance().setGibIndicatorTemperatures(buildTemperatureString()); // setIndoorTemp() will update value on screen
     }
 
     private String buildTemperatureString() {
-        return String.format(Locale.getDefault(), "%.1f°", outdoorTemp) + "°C" +
+        float gasFilled = fuelPercentOfFilled * 0.49f + 5;
+        float gasEmpty = GibCommunicationHandler.getInstance(context).getDeviceSpecificConstants().getFuelTankVolume() - gasFilled;
+        return String.format(Locale.getDefault(), "%.1fL %.1f°C", gasEmpty, outdoorTemp) +
                 "\n" +
-                String.format(Locale.getDefault(), "%.1f°", indoorTemp) + "°C";
+                String.format(Locale.getDefault(), "%.1fL %.1f°C", gasFilled, indoorTemp);
     }
 }

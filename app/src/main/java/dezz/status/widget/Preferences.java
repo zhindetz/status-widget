@@ -137,6 +137,7 @@ public class Preferences {
     public final Bool showGibIndicators = new Bool(this, "showGibIndicators", false);
     public final Bool showGibIndicatorsAlways = new Bool(this, "showGibIndicatorsAlways", true);
     public final Int adjustGibIndicatorsY = new Int(this, "adjustGibIndicatorsY", 0);
+    public final Bool scheduleRefreshGibProperties = new Bool(this, "scheduleRefreshGibProperties", false);
 
     public Preferences(Context context) {
         final Context deviceContext = context.getApplicationContext().createDeviceProtectedStorageContext();

@@ -13,6 +13,7 @@ import androidx.appcompat.view.ContextThemeWrapper;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -22,7 +23,7 @@ public class LogsActivity extends AppCompatActivity {
 
     ActivityLogsBinding binding;
     Context themedContext;
-    private static LogsActivity instance;
+    private static WeakReference<LogsActivity> instanceRef;
     private static final StringBuilder fallbackBuffer = new StringBuilder();
     private static final int MAX_LOG_LINES = 500;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -64,6 +65,10 @@ public class LogsActivity extends AppCompatActivity {
         } else {
             // Save to fallback buffer if LogActivity is not running
             fallbackBuffer.append(logEntry);
+            if (fallbackBuffer.length() > 100_000) { // limit fallback buffer size
+                fallbackBuffer.delete(0, fallbackBuffer.length() - 50_000);
+            }
+
         }
     }
 
@@ -93,7 +98,7 @@ public class LogsActivity extends AppCompatActivity {
     }
 
     public static LogsActivity getInstance() {
-        return instance;
+        return instanceRef != null ? instanceRef.get() : null;
     }
 
     @Override
@@ -104,7 +109,7 @@ public class LogsActivity extends AppCompatActivity {
         binding = ActivityLogsBinding.inflate(LayoutInflater.from(themedContext));
         setContentView(binding.getRoot());
 
-        instance = this;
+        instanceRef = new WeakReference<>(this);
 
         // Clear logs
         binding.clearLogsButton.setOnClickListener(v -> {
@@ -127,6 +132,9 @@ public class LogsActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        instance = null;
+        if (instanceRef != null && instanceRef.get() == this) {
+            instanceRef.clear();
+            instanceRef = null;
+        }
     }
 }

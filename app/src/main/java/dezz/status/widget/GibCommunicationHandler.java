@@ -169,7 +169,7 @@ public class GibCommunicationHandler {
                     if (deviceSpecificConstants.getSeatAreaFrontLeft() == area) {
                         if (value == Constants.IGibConstants.VALUE_OFF) {
                             LogsActivity.log(TAG, "Seat cool driver: 0");
-                            WidgetService.getInstance().setGibIconsSeatFrontLeft(WidgetService.GibSeatState.OFF);
+                            WidgetService.getInstance().setGibIconsSeatFrontLeft(WidgetService.GibSeatState.COOL0);
                         } else if (value == deviceSpecificConstants.getSeatCool1()) {
                             LogsActivity.log(TAG, "Seat cool driver: 1");
                             WidgetService.getInstance().setGibIconsSeatFrontLeft(WidgetService.GibSeatState.COOL1);
@@ -185,7 +185,7 @@ public class GibCommunicationHandler {
                     } else if (deviceSpecificConstants.getSeatAreaFrontRight() == area) {
                         if (value == Constants.IGibConstants.VALUE_OFF) {
                             LogsActivity.log(TAG, "Seat cool passenger: 0");
-                            WidgetService.getInstance().setGibIconsSeatFrontRight(WidgetService.GibSeatState.OFF);
+                            WidgetService.getInstance().setGibIconsSeatFrontRight(WidgetService.GibSeatState.COOL0);
                         } else if (value == deviceSpecificConstants.getSeatCool1()) {
                             LogsActivity.log(TAG, "Seat cool passenger: 1");
                             WidgetService.getInstance().setGibIconsSeatFrontRight(WidgetService.GibSeatState.COOL1);
@@ -205,7 +205,7 @@ public class GibCommunicationHandler {
                     if (deviceSpecificConstants.getSeatAreaFrontLeft() == area) {
                         if (value == Constants.IGibConstants.VALUE_OFF) {
                             LogsActivity.log(TAG, "Seat heat driver: 0");
-                            WidgetService.getInstance().setGibIconsSeatFrontLeft(WidgetService.GibSeatState.OFF);
+                            WidgetService.getInstance().setGibIconsSeatFrontLeft(WidgetService.GibSeatState.HEAT0);
                         } else if (value == deviceSpecificConstants.getSeatHeat1()) {
                             LogsActivity.log(TAG, "Seat heat driver: 1");
                             WidgetService.getInstance().setGibIconsSeatFrontLeft(WidgetService.GibSeatState.HEAT1);
@@ -221,7 +221,7 @@ public class GibCommunicationHandler {
                     } else if (deviceSpecificConstants.getSeatAreaFrontRight() == area) {
                         if (value == Constants.IGibConstants.VALUE_OFF) {
                             LogsActivity.log(TAG, "Seat heat passenger: 0");
-                            WidgetService.getInstance().setGibIconsSeatFrontRight(WidgetService.GibSeatState.OFF);
+                            WidgetService.getInstance().setGibIconsSeatFrontRight(WidgetService.GibSeatState.HEAT0);
                         } else if (value == deviceSpecificConstants.getSeatHeat1()) {
                             LogsActivity.log(TAG, "Seat heat passenger: 1");
                             WidgetService.getInstance().setGibIconsSeatFrontRight(WidgetService.GibSeatState.HEAT1);
@@ -237,7 +237,7 @@ public class GibCommunicationHandler {
                     } else if (deviceSpecificConstants.getSeatAreaRearLeft() == area) {
                         if (value == Constants.IGibConstants.VALUE_OFF) {
                             LogsActivity.log(TAG, "Seat heat rear left: 0");
-                            WidgetService.getInstance().setGibIconsSeatRearLeft(WidgetService.GibSeatState.OFF);
+                            WidgetService.getInstance().setGibIconsSeatRearLeft(WidgetService.GibSeatState.HEAT0);
                         } else if (value == deviceSpecificConstants.getSeatHeat1()) {
                             LogsActivity.log(TAG, "Seat heat rear left: 1");
                             WidgetService.getInstance().setGibIconsSeatRearLeft(WidgetService.GibSeatState.HEAT1);
@@ -253,7 +253,7 @@ public class GibCommunicationHandler {
                     } else if (deviceSpecificConstants.getSeatAreaRearRight() == area) {
                         if (value == Constants.IGibConstants.VALUE_OFF) {
                             LogsActivity.log(TAG, "Seat heat rear right: 0");
-                            WidgetService.getInstance().setGibIconsSeatRearRight(WidgetService.GibSeatState.OFF);
+                            WidgetService.getInstance().setGibIconsSeatRearRight(WidgetService.GibSeatState.HEAT0);
                         } else if (value == deviceSpecificConstants.getSeatHeat1()) {
                             LogsActivity.log(TAG, "Seat heat rear right: 1");
                             WidgetService.getInstance().setGibIconsSeatRearRight(WidgetService.GibSeatState.HEAT1);
@@ -273,6 +273,10 @@ public class GibCommunicationHandler {
                     GibManager.getInstance(context).setIndoorTemp(parseAsFloat(valueObj, -99.9f));
                 } else if (id == deviceSpecificConstants.getOutdoorTempId()) {
                     GibManager.getInstance(context).setOutdoorTemp(parseAsFloat(valueObj, -99.9f));
+                } else if (id == deviceSpecificConstants.getFuelLevelId()) {
+                    GibManager.getInstance(context).setFuelLevel(parseAsFloat(valueObj, 0f));
+                } else if (id == deviceSpecificConstants.getFuelPercentageId()) {
+                    GibManager.getInstance(context).setFuelPercent(parseAsFloat(valueObj, 0f));
                 } else {
                     LogsActivity.log(TAG, "Unknown: ID = " + id);
                 }

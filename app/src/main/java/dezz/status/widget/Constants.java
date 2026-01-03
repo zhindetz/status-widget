@@ -31,6 +31,9 @@ public class Constants {
         int getSeatCoolId();
         int getOutdoorTempId();
         int getIndoorTempId();
+        int getFuelLevelId();
+        int getFuelPercentageId();
+        float getFuelTankVolume();
 
         // Steering wheel heat levels
         int getSteeringWheelHeat1();
@@ -109,6 +112,20 @@ public class Constants {
         @Override
         public int getIndoorTempId() {
             return 1051648;
+        }
+
+        @Override
+        public int getFuelLevelId() {
+            return 1050112;
+        }
+
+        @Override
+        public int getFuelPercentageId() {
+            return 4211968;
+        }
+        @Override
+        public float getFuelTankVolume() {
+            return 54.0f;
         }
 
         @Override

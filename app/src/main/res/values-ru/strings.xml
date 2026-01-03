@@ -55,6 +55,7 @@
     <string name="show_gnss">Показывать иконку GPS</string>
     <string name="show_gib_indicators">Показывать индикаторы из GIB</string>
     <string name="show_gib_indicators_always">Не скрывать индикаторы GIB при выключенной функции</string>
+    <string name="schedule_gib_properties_refresh">Периодически перезапрашивать состояние GIB</string>
     <string name="spacing_between_text_and_icons_size">Промежуток между текстом и иконками</string>
     <string name="text_outline_transparency">Интенсивность обводки текста</string>
     <string name="background_transparency">Интенсивность фона</string>

@@ -222,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
                         prefs.showGibIndicators.set(false);
                         binding.showGibSwitch.setChecked(false);
                         prefs.showGibIndicatorsAlways.set(false);
+                        prefs.scheduleRefreshGibProperties.set(false);
                         binding.showGibAlwaysSwitch.setChecked(false);
                         binding.gibOptions.setVisibility(View.GONE);
                     }
@@ -244,6 +245,8 @@ public class MainActivity extends AppCompatActivity {
 
         binder.bindCheckbox(binding.showGibSwitch, prefs.showGibIndicators);
         binder.bindCheckbox(binding.showGibAlwaysSwitch, prefs.showGibIndicatorsAlways);
+        binder.bindCheckbox(binding.scheduleRefreshGibPropertiesSwitch, prefs.scheduleRefreshGibProperties); //TODO Add logic to add Runnable on switch, so no Widget restart is needed.
+
         binder.bindOffsetSeekbar(binding.adjustGibIndicatorsYSeekBar, binding.adjustGibIndicatorsYValueText, prefs.adjustGibIndicatorsY);
 
         binding.openLogsButton.setOnClickListener(v -> {

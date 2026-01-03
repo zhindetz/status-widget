@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="optionsTextSizeHeader">32sp</dimen>
-    <dimen name="optionsTextSizeBlock">26sp</dimen>
-    <dimen name="optionsTextSizeLabel">24sp</dimen>
-    <dimen name="optionsTextSizeFooter">12sp</dimen>
+    <dimen name="optionsTextSizeHeader">48sp</dimen>
+    <dimen name="optionsTextSizeBlock">39sp</dimen>
+    <dimen name="optionsTextSizeLabel">36sp</dimen>
+    <dimen name="optionsTextSizeFooter">18sp</dimen>
+    <dimen name="optionsPaddingHorizontal">36sp</dimen>
+    <dimen name="optionsPaddingVertical">18sp</dimen>
+    <dimen name="optionsMarginBig">30sp</dimen>
+    <dimen name="optionsMargin">24sp</dimen>
+    <dimen name="optionsMarginMedium">18sp</dimen>
+    <dimen name="optionsMarginSmall">12sp</dimen>
+    <dimen name="optionsScrollbarSize">12sp</dimen>
+    <dimen name="optionsLineHeight">72sp</dimen>
+    <dimen name="optionsElevation">3sp</dimen>
 
     <dimen name="gibIconStrokeWidth">3</dimen>
     <dimen name="gibIconStrokeFillWidth">1</dimen>

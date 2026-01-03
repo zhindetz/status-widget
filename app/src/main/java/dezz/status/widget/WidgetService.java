@@ -164,11 +164,11 @@ public class WidgetService extends Service {
 
     protected static final int[] GIB_ICONS_SEAT_LEFT = {
             R.drawable.ic_gib_seat_left_off,
-            R.drawable.ic_gib_seat_left_cool0,
+            R.drawable.ic_gib_seat_left_off, //ic_gib_seat_left_cool0,
             R.drawable.ic_gib_seat_left_cool1,
             R.drawable.ic_gib_seat_left_cool2,
             R.drawable.ic_gib_seat_left_cool3,
-            R.drawable.ic_gib_seat_left_heat0,
+            R.drawable.ic_gib_seat_left_off, //ic_gib_seat_left_heat0,
             R.drawable.ic_gib_seat_left_heat1,
             R.drawable.ic_gib_seat_left_heat2,
             R.drawable.ic_gib_seat_left_heat3
@@ -176,11 +176,11 @@ public class WidgetService extends Service {
 
     protected static final int[] GIB_ICONS_SEAT_RIGHT = {
             R.drawable.ic_gib_seat_right_off,
-            R.drawable.ic_gib_seat_right_cool0,
+            R.drawable.ic_gib_seat_right_off, //ic_gib_seat_right_cool0,
             R.drawable.ic_gib_seat_right_cool1,
             R.drawable.ic_gib_seat_right_cool2,
             R.drawable.ic_gib_seat_right_cool3,
-            R.drawable.ic_gib_seat_right_heat0,
+            R.drawable.ic_gib_seat_right_off, //ic_gib_seat_right_heat0,
             R.drawable.ic_gib_seat_right_heat1,
             R.drawable.ic_gib_seat_right_heat2,
             R.drawable.ic_gib_seat_right_heat3
@@ -202,8 +202,8 @@ public class WidgetService extends Service {
     private static final String CHANNEL_ID = "WidgetServiceChannel";
     private static final long GNSS_STATUS_CHECK_INTERVAL = 1_000;
     private static final long TWILIGHT_CALC_INTERVAL = 900_000;
-    private static final long GIB_REFRESH_CHECK_INTERVAL = 20_000;
-    private static final long GIB_TEMPERATURE_CHECK_INTERVAL = 30_000;
+    private static final long GIB_REFRESH_CHECK_INTERVAL = 21_000;
+    private static final long GIB_TEMPERATURE_CHECK_INTERVAL = 15_000;
 
     private static WidgetService instance;
 
@@ -424,7 +424,9 @@ public class WidgetService extends Service {
 //            LogsActivity.log(TAG, "Interval check of properties from GIB");
             GibManager.getInstance(getBaseContext()).sendIntentsToGetCurrentGibProperties();
 
-            mainHandler.postDelayed(this, GIB_REFRESH_CHECK_INTERVAL);
+            if (prefs.scheduleRefreshGibProperties.get()) {
+                mainHandler.postDelayed(this, GIB_REFRESH_CHECK_INTERVAL);
+            }
         }
     };
 
@@ -432,7 +434,7 @@ public class WidgetService extends Service {
         @Override
         public void run() {
 //            LogsActivity.log(TAG, "Interval check of temperatures from GIB");
-            GibManager.getInstance(getBaseContext()).sendIntentsToGetCurrentGibTemperatures();
+            GibManager.getInstance(getBaseContext()).sendIntentsToGetCurrentGibSensors();
 
             mainHandler.postDelayed(this, GIB_TEMPERATURE_CHECK_INTERVAL);
         }
@@ -916,7 +918,13 @@ public class WidgetService extends Service {
         );
     }
 
+    private boolean isHeatOverridingCool(GibSeatState oldState, GibSeatState newState) {
+        return (oldState.name().startsWith("HEAT") && newState == GibSeatState.COOL0) ||
+                (oldState.name().startsWith("COOL") && newState == GibSeatState.HEAT0);
+    }
+
     protected void setGibIconsSeatFrontLeft(GibSeatState newState) {
+        if (isHeatOverridingCool(gibSeatFLState, newState)) return;
         gibSeatFLState = newState;
         updateIconStatus(GIB_ICONS_SEAT_LEFT, binding.gibSeatFrontLeft, gibSeatFLState.ordinal());
         binding.gibSeatFrontLeft.setVisibility(
@@ -927,6 +935,7 @@ public class WidgetService extends Service {
     }
 
     protected void setGibIconsSeatFrontRight(GibSeatState newState) {
+        if (isHeatOverridingCool(gibSeatFRState, newState)) return;
         gibSeatFRState = newState;
         updateIconStatus(GIB_ICONS_SEAT_RIGHT, binding.gibSeatFrontRight, gibSeatFRState.ordinal());
         binding.gibSeatFrontRight.setVisibility(
